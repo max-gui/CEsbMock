@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+               xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <Request xmlns="http://tempuri.org/">
+      <requestXML>
+        <?xml version="1.0"?>
+        <Request>
+        <Header UserID="410471" RequestType="Payment.Base.MerchantService.InqurieMerchantPayWay" Culture="cn" RequestID="8bec1642-b0fb-4cb1-9784-6ae195aa2533" ClientIP="172.16.150.78" AsyncRequest="false" Timeout="0" MessagePriority="3" AssemblyVersion="2.8.0.0" RequestBodySize="0" SerializeMode="Xml" RouteStep="1" Environment="fat18" UseMemoryQ="false" />
+        <InqurieMerchantPayWayRequest>
+        <MerchantID>200124</MerchantID>
+        <ActionMode>All</ActionMode>
+        <Language>En</Language>
+        <ChargeMode>0</ChargeMode>
+        <IsNeedRiskControl>true</IsNeedRiskControl>
+        <CustomerID>M00021355</CustomerID>
+        <OrderID>66555</OrderID>
+        </InqurieMerchantPayWayRequest>
+        </Request>
+      </requestXML>
+    </Request>
+  </soap:Body>
+</soap:Envelope>
