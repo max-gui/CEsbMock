@@ -1,8 +1,12 @@
-﻿using System;
+﻿using StackExchange.Redis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Web;
 using System.Web.Services;
+using System.Xml;
 
 namespace CtripEsbAsmx
 {
@@ -12,29 +16,20 @@ namespace CtripEsbAsmx
     [WebService(Namespace = "http://tempuri.org/")]
     [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
     [System.ComponentModel.ToolboxItem(false)]
-    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
+    // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line.
     // [System.Web.Script.Services.ScriptService]
     public class WebService1 : System.Web.Services.WebService
     {
-
-        [WebMethod]
-        public string HelloWorld(string aa)
-        {
-            return "Hello World";
-        }
-
         [WebMethod]
         public string Request(string requestXML)
         {
-            var switchTmp = requestXML.Replace("\"", "'");
-            switch (requestXML)
-            {
-                case @"<?xml version='1.0' encoding='utf-8'?>
-<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
-  <soap:Body>
-    <Request xmlns='http://tempuri.org/'>
-      <requestXML>
-        <?xml version='1.0'?>
+            
+            XmlDocument reqXml = new XmlDocument();
+            reqXml.LoadXml(requestXML);
+
+            XmlDocument xmlPattern = new XmlDocument();
+
+            string req1 = @"<?xml version='1.0'?>
         <Request>
         <Header Culture='cn' UserID='340101' RequestID='039477b6-431c-415e-9f56-753a4ca88aec' RequestType='Payment.Base.MerchantService.InqurieMerchantPayWay' ClientIP='172.16.146.78' AsyncRequest='false' Timeout='0' MessagePriority='3' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' UseMemoryQ='false' />
         <InqurieMerchantPayWayRequest>
@@ -46,17 +41,9 @@ namespace CtripEsbAsmx
         <CustomerID>13811118888</CustomerID>
         <OrderID>900234347</OrderID>
         </InqurieMerchantPayWayRequest>
-        </Request>
-      </requestXML>
-    </Request>
-  </soap:Body>
-</soap:Envelope>":
-                    return @"<?xml version='1.0' encoding='utf-8'?>
-<soap:Envelope xmlns:soap='http://schemas.xmlsoap.org/soap/envelope/' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xsd='http://www.w3.org/2001/XMLSchema'>
-  <soap:Body>
-    <RequestResponse xmlns='http://tempuri.org/'>
-      <RequestResult>
-        <?xml version='1.0'?>
+        </Request>";
+
+            string res1 = @"<?xml version='1.0'?>
         <Response>
         <Header ServerIP='10.2.254.17' Culture='cn' ShouldRecordPerformanceTime='false' UserID='340101' RequestID='039477b6-431c-415e-9f56-753a4ca88aec' ResultCode='Success' ResultNo='0' ResultMsg='成功' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' />
         <InqurieMerchantPayWayResponse>
@@ -411,7 +398,7 @@ namespace CtripEsbAsmx
         <ActionMode>Auto</ActionMode>
         <Descrption>包商银行</Descrption>
         <IsUsedCardAvailable>true</IsUsedCardAvailable>
-        <IsSupportRealTime>true</IsSupportRealTime>
+       <IsSupportRealTime>true</IsSupportRealTime>
         </PaymentWayItem>
         <PaymentWayItem>
         <IsSupportPreAuth>false</IsSupportPreAuth>
@@ -720,7 +707,7 @@ namespace CtripEsbAsmx
         <PaymentWayItem>
         <IsSupportPreAuth>false</IsSupportPreAuth>
         <CreditCardType>500</CreditCardType>
-        <CreditCardBankID>518</CreditCardBankID>
+       <CreditCardBankID>518</CreditCardBankID>
         <PaymentWayID>CC_GYCCB</PaymentWayID>
         <PaymentWayName>贵阳银行</PaymentWayName>
         <PaymentWayGlobalName />
@@ -942,7 +929,7 @@ namespace CtripEsbAsmx
         <Descrption />
         <IsUsedCardAvailable>true</IsUsedCardAvailable>
         <IsSupportRealTime>true</IsSupportRealTime>
-        </PaymentWayItem>
+       </PaymentWayItem>
         <PaymentWayItem>
         <IsSupportPreAuth>false</IsSupportPreAuth>
         <CreditCardType>500</CreditCardType>
@@ -1096,7 +1083,7 @@ namespace CtripEsbAsmx
         <PaymentWayItem>
         <IsSupportPreAuth>false</IsSupportPreAuth>
         <CreditCardType>500</CreditCardType>
-        <CreditCardBankID>534</CreditCardBankID>
+       <CreditCardBankID>534</CreditCardBankID>
         <PaymentWayID>CC_QLBC</PaymentWayID>
         <PaymentWayName>齐鲁银行</PaymentWayName>
         <PaymentWayGlobalName />
@@ -1108,7 +1095,7 @@ namespace CtripEsbAsmx
         <IsUsedCardAvailable>true</IsUsedCardAvailable>
         <IsSupportRealTime>true</IsSupportRealTime>
         </PaymentWayItem>
-        <PaymentWayItem>
+       <PaymentWayItem>
         <IsSupportPreAuth>true</IsSupportPreAuth>
         <CreditCardType>500</CreditCardType>
         <CreditCardBankID>566</CreditCardBankID>
@@ -1289,7 +1276,7 @@ namespace CtripEsbAsmx
         <ActionMode>Auto</ActionMode>
         <Descrption>吴江农商银行</Descrption>
         <IsUsedCardAvailable>true</IsUsedCardAvailable>
-        <IsSupportRealTime>true</IsSupportRealTime>
+       <IsSupportRealTime>true</IsSupportRealTime>
         </PaymentWayItem>
         <PaymentWayItem>
         <IsSupportPreAuth>false</IsSupportPreAuth>
@@ -1434,7 +1421,7 @@ namespace CtripEsbAsmx
         <PaySystemName>银行卡支付</PaySystemName>
         <ActionMode>Manual</ActionMode>
         <Descrption />
-        <IsUsedCardAvailable>true</IsUsedCardAvailable>
+       <IsUsedCardAvailable>true</IsUsedCardAvailable>
         <IsSupportRealTime>false</IsSupportRealTime>
         </PaymentWayItem>
         <PaymentWayItem>
@@ -1769,7 +1756,7 @@ namespace CtripEsbAsmx
         </PaymentWayItem>
         </PaymentWayItems>
         </PaymentCatalogItem>
-        <PaymentCatalogItem>
+       <PaymentCatalogItem>
         <PaymentCatalogID>7</PaymentCatalogID>
         <CatalogName>积分担保</CatalogName>
         <CatalogCode>CreditsGuarantee</CatalogCode>
@@ -2123,7 +2110,7 @@ namespace CtripEsbAsmx
         <IsSupportPreAuth>false</IsSupportPreAuth>
         <CreditCardType>1000</CreditCardType>
         <CreditCardBankID>1136</CreditCardBankID>
-        <PaymentWayID>DQ_SDB</PaymentWayID>
+       <PaymentWayID>DQ_SDB</PaymentWayID>
         <PaymentWayName>深圳发展银行</PaymentWayName>
         <PaymentWayGlobalName />
         <PrepayType>CCARD</PrepayType>
@@ -2344,7 +2331,7 @@ namespace CtripEsbAsmx
         <IsUsedCardAvailable>true</IsUsedCardAvailable>
         <IsSupportRealTime>true</IsSupportRealTime>
         </PaymentWayItem>
-        <PaymentWayItem>
+       <PaymentWayItem>
         <IsSupportPreAuth>false</IsSupportPreAuth>
         <CreditCardType>1000</CreditCardType>
         <CreditCardBankID>1103</CreditCardBankID>
@@ -2398,7 +2385,7 @@ namespace CtripEsbAsmx
         <PaymentWayGlobalName />
         <PrepayType>CCARD</PrepayType>
         <SubPaySystem>2</SubPaySystem>
-        <PaySystemName>银行卡支付</PaySystemName>
+       <PaySystemName>银行卡支付</PaySystemName>
         <ActionMode>Auto</ActionMode>
         <Descrption>光大银行</Descrption>
         <IsUsedCardAvailable>true</IsUsedCardAvailable>
@@ -2500,7 +2487,7 @@ namespace CtripEsbAsmx
         <IsSupportPreAuth>false</IsSupportPreAuth>
         <CreditCardType>1000</CreditCardType>
         <CreditCardBankID>1010</CreditCardBankID>
-        <PaymentWayID>DQ_CQRCB</PaymentWayID>
+       <PaymentWayID>DQ_CQRCB</PaymentWayID>
         <PaymentWayName>重庆农村商业银行</PaymentWayName>
         <PaymentWayGlobalName />
         <PrepayType>CCARD</PrepayType>
@@ -2696,7 +2683,7 @@ namespace CtripEsbAsmx
         <CreditCardType>1000</CreditCardType>
         <CreditCardBankID>1134</CreditCardBankID>
         <PaymentWayID>DQ_HXB</PaymentWayID>
-        <PaymentWayName>华夏银行</PaymentWayName>
+       <PaymentWayName>华夏银行</PaymentWayName>
         <PaymentWayGlobalName />
         <PrepayType>CCARD</PrepayType>
         <SubPaySystem>2</SubPaySystem>
@@ -2824,16 +2811,2679 @@ namespace CtripEsbAsmx
         </PaymentCatalogItem>
         </PaymentCatalogs>
         </InqurieMerchantPayWayResponse>
-        </Response>
-      </RequestResult>
-    </RequestResponse>
-  </soap:Body>
-</soap:Envelope>";
+        </Response>";
 
+            string req2 = @"<?xml version='1.0'?>
+        <Request>
+        <Header UserID='340101' RequestType='Payment.TMPay.Service.SelectCustomerTicketCollection' Culture='cn' RequestID='705adfd4-c562-4fe3-880d-47b6310cde0d' ClientIP='172.16.146.78' AsyncRequest='false' Timeout='0' MessagePriority='3' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' UseMemoryQ='false' />
+        <SelectCustomerTicketCollectionRequest>
+        <CustomerID>13811118888</CustomerID>
+        </SelectCustomerTicketCollectionRequest>
+        </Request>";
+            string res2 = @"<?xml version='1.0'?>
+        <Response>
+        <Header ServerIP='10.2.6.47' ShouldRecordPerformanceTime='false' ResultCode='Success' ResultNo='0' ResultMsg='成功' RequestBodySize='0' SerializeMode='Xml' RouteStep='0' />
+        <SelectCustomerTicketCollectionResponse>
+        <TicketCollectionItemList />
+        </SelectCustomerTicketCollectionResponse>
+        </Response>";
 
-            }
+            string req3 = @"<?xml version='1.0'?>
+        <Request>
+        <Header UserID='340101' RequestType='AccCash.CreditCard.GetCreditCardTypeInfo' Culture='cn' RequestID='e5925113-de7a-41af-a43a-6209477c036b' ClientIP='172.16.146.78' AsyncRequest='false' Timeout='0' MessagePriority='3' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' UseMemoryQ='false' />
+        <GetCreditCardTypeInfoRequest>
+        <CreditCardType>-2147483648</CreditCardType>
+        </GetCreditCardTypeInfoRequest>
+        </Request>";
+            string res3 = @"<?xml version='1.0'?>
+        <Response>
+        <Header ServerIP='10.2.6.47' Culture='cn' ShouldRecordPerformanceTime='false' UserID='340101' RequestID='e5925113-de7a-41af-a43a-6209477c036b' ResultCode='Success' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' />
+        <GetCreditCardTypeInfoResponse>
+        <CreditCardTypeItems>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>1</CreditCardType>
+        <CreditCardName>中国银行 -- 长城卡</CreditCardName>
+        <CreditCardBig5Name>い瓣蝗︽ -- </CreditCardBig5Name>
+        <CreditCardeName>Bank of China -- Great Wall Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>1</SeqID>
+        <Bank>中国银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>BOC</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>F</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>3</CreditCardType>
+        <CreditCardName>中国交通银行 -- 信用卡（贷记卡）</CreditCardName>
+        <CreditCardBig5Name>い瓣ユ硄蝗︽ -- 獺ノ (禪癘)</CreditCardBig5Name>
+        <CreditCardeName>China Communication Bank -- Pacific Card (Shanghai)</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>3</SeqID>
+        <Bank>中国交通银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>CTB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>F</UseHtlPay>
+        <UseHtlGuarantee>F</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>F</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>4</CreditCardType>
+        <CreditCardName>中国农业银行 -- 金穗卡</CreditCardName>
+        <CreditCardBig5Name>い瓣笰穨蝗︽ -- 罦</CreditCardBig5Name>
+        <CreditCardeName>Agricultural Bank of China -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>4</SeqID>
+        <Bank>中国农业银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>AB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>5</CreditCardType>
+        <CreditCardName>中国建设银行 -- 信用卡（贷记卡）</CreditCardName>
+        <CreditCardBig5Name>い瓣砞蝗︽ -- 獺ノ (禪癘)</CreditCardBig5Name>
+        <CreditCardeName>China Construction Bank -- Long Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>5</SeqID>
+        <Bank>中国建设银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>CCB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>11</CreditCardType>
+        <CreditCardName>中国招商银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>锟斤拷锟斤拷锟桔坝蝗︼拷 -- 锟斤拷锟节</CreditCardBig5Name>
+        <CreditCardeName>China Merchants Bank -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>6</SeqID>
+        <Bank>中国招商银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>CMB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>6</CreditCardType>
+        <CreditCardName>锟斤拷锟解发锟斤拷锟斤拷锟矫匡拷 -- 锟斤拷锟铰达拷</CreditCardName>
+        <CreditCardBig5Name>锟揭锟給锟斤拷锟紿锟轿 -- 锟経锟狡笷(Master)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Master Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>7</SeqID>
+        <Bank>锟斤拷锟铰达卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>MASTER</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>锟斤拷锟节 -- 锟経锟狡笷(Master)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>T</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>7</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 威士(VISA)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- (VISA)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Visa Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>8</SeqID>
+        <Bank>威士卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>VISA</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- (VISA)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>8</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 运通(AMEX)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- 笲硄(AMEX)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- American Express Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>9</SeqID>
+        <Bank>运通卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>AMEX</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- 笲硄(AMEX)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>T</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>9</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 大来(Diners Club)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- ㄓ(Diners Club)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Diners Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>10</SeqID>
+        <Bank>大来卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>DC</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- ㄓ(Diners Club)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>10</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- JCB</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- JCB</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- JCB Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>11</SeqID>
+        <Bank>JCB卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>JCB</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- JCB</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>13</CreditCardType>
+        <CreditCardName>广东发展银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>約狥祇甶蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Guangdong Development Bank -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>13</SeqID>
+        <Bank>广东发展银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>GDB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>F</UseFltPay>
+        <UseFltGuarantee>F</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>14</CreditCardType>
+        <CreditCardName>国内发行银联卡</CreditCardName>
+        <CreditCardBig5Name>国内发行银联卡</CreditCardBig5Name>
+        <CreditCardeName>国内发行银联卡</CreditCardeName>
+        <Active>F</Active>
+        <SeqID>14</SeqID>
+        <Bank>国内发行银联卡</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName />
+        <ListParameter>0</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>15</CreditCardType>
+        <CreditCardName>中国光大银行 -- 阳光卡</CreditCardName>
+        <CreditCardBig5Name>い瓣蝗︽ -- 锭</CreditCardBig5Name>
+        <CreditCardeName>China Everybright Bank -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>15</SeqID>
+        <Bank>中国光大银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>CEB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>F</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>16</CreditCardType>
+        <CreditCardName>中国民生银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>い瓣チネ蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>China Minsheng Banking -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>16</SeqID>
+        <Bank>中国民生银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>CMBC</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>F</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>F</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>17</CreditCardType>
+        <CreditCardName>中信银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>い獺蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>China CITIC Bank -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>17</SeqID>
+        <Bank>中信银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>CIBC</BankShortName>
+        <ListParameter>59</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>18</CreditCardType>
+        <CreditCardName>上海浦东发展银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>狥祇甶蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Shanghai Pudong Development Bank -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>18</SeqID>
+        <Bank>浦东发展银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>SPDBC</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>19</CreditCardType>
+        <CreditCardName>携程银行 -- 商旅业务担保卡</CreditCardName>
+        <CreditCardBig5Name>拟祘蝗︽ -- 皊┍踞玂</CreditCardBig5Name>
+        <CreditCardeName>Ctrip Bank -- Corporate Travel Guarantees Credit Card</CreditCardeName>
+        <Active>F</Active>
+        <SeqID>19</SeqID>
+        <Bank>携程银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName />
+        <ListParameter>0</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>20</CreditCardType>
+        <CreditCardName>兴业银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>砍穨蝗︽-- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Industrial Bank Co.ltd -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>20</SeqID>
+        <Bank>兴业银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>CIB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>F</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>21</CreditCardType>
+        <CreditCardName>上海银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Bank of Shanghai</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>21</SeqID>
+        <Bank>上海银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>BOS</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>F</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>22</CreditCardType>
+        <CreditCardName>深圳平安银行--平安万里通信用卡</CreditCardName>
+        <CreditCardBig5Name>瞏キ蝗︽--キ窾ń硄獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Ping An of China.ShenZhen Ping An Bank</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>22</SeqID>
+        <Bank>深圳平安银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>PASCB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>F</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>23</CreditCardType>
+        <CreditCardName>发展信用卡--深圳发展银行</CreditCardName>
+        <CreditCardBig5Name>祇甶獺ノ--瞏祇甶蝗︽</CreditCardBig5Name>
+        <CreditCardeName>Shenzhen Development Bank</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>23</SeqID>
+        <Bank>深圳发展银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>SDBC</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>25</CreditCardType>
+        <CreditCardName>宁波银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>圭猧蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Bank of Ningbo -- Debit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>25</SeqID>
+        <Bank>宁波银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>NBCB</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>26</CreditCardType>
+        <CreditCardName>东亚银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>狥ㄈ蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Bank of East Asia -- Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>26</SeqID>
+        <Bank>东亚银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>BEA</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>27</CreditCardType>
+        <CreditCardName>北京银行 -- 信用卡</CreditCardName>
+        <CreditCardBig5Name>ㄊ蝗︽ -- 獺ノ</CreditCardBig5Name>
+        <CreditCardeName>Bank of Beijing</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>27</SeqID>
+        <Bank>北京银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>BOB</BankShortName>
+        <ListParameter>127</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>F</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>28</CreditCardType>
+        <CreditCardName>江苏银行--信用卡</CreditCardName>
+        <CreditCardBig5Name>江蘇銀行</CreditCardBig5Name>
+        <CreditCardeName>Bank of JiangSu--Credit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>28</SeqID>
+        <Bank>江苏银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>JSBK</BankShortName>
+        <ListParameter>63</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>F</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>F</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>F</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>66</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 万事达(Master)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- 窾ㄆ笷(Master)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Master Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>66</SeqID>
+        <Bank>万事达卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>MASTER</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- 窾ㄆ笷(Master)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>67</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 万事达(Master)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- 窾ㄆ笷(Master)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Master Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>67</SeqID>
+        <Bank>万事达卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>MASTER</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- 窾ㄆ笷(Master)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>76</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 威士(VISA)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- (VISA)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Visa Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>76</SeqID>
+        <Bank>威士卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>VISA</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- (VISA)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>77</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- 威士(VISA)</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- (VISA)</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- Visa Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>77</SeqID>
+        <Bank>威士卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>VISA</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- (VISA)</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>78</CreditCardType>
+        <CreditCardName>花旗银行-信用卡</CreditCardName>
+        <CreditCardBig5Name />
+        <CreditCardeName>Citibank, N.A</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>78</SeqID>
+        <Bank>花旗银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>Citibank</BankShortName>
+        <ListParameter>127</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>24</CreditCardType>
+        <CreditCardName>华夏银行-信用卡</CreditCardName>
+        <CreditCardBig5Name />
+        <CreditCardeName>Bank of Huaxia</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>80</SeqID>
+        <Bank>华夏银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>HX</BankShortName>
+        <ListParameter>127</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>F</UseNewSystem>
+        <HK_Big5Name>华夏银行-信用卡</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>F</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>F</UsePkgPay>
+        <UsePkgGuarantee>F</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>F</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>101</CreditCardType>
+        <CreditCardName>中国工商银行 -- 直付通</CreditCardName>
+        <CreditCardBig5Name>い瓣坝蝗︽ -- 癘</CreditCardBig5Name>
+        <CreditCardeName>Industry &amp;amp; Commercial Bank of China -- Debit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>101</SeqID>
+        <Bank>工商银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>ICBC</BankShortName>
+        <ListParameter>0</ListParameter>
+        <IsJJK>T</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>102</CreditCardType>
+        <CreditCardName>中国招商银行 -- 借记卡</CreditCardName>
+        <CreditCardBig5Name>い瓣┷坝蝗︽ -- 癘</CreditCardBig5Name>
+        <CreditCardeName>China Merchants Bank -- Debit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>102</SeqID>
+        <Bank>中国招商银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>CMB</BankShortName>
+        <ListParameter>0</ListParameter>
+        <IsJJK>T</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+       <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>103</CreditCardType>
+        <CreditCardName>中国招商银行 -- 直付通</CreditCardName>
+        <CreditCardBig5Name>い瓣┷坝蝗︽ -- 癘</CreditCardBig5Name>
+        <CreditCardeName>China Merchants Bank -- Debit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>103</SeqID>
+        <Bank>中国招商银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>CMB</BankShortName>
+        <ListParameter>0</ListParameter>
+        <IsJJK>T</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardType>105</CreditCardType>
+        <CreditCardName>银联手机支付通</CreditCardName>
+        <CreditCardBig5Name>蝗羛も诀や硄</CreditCardBig5Name>
+        <CreditCardeName>China UnionPay Telephone -- Debit Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>105</SeqID>
+        <Bank>银联手机支付通</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>CU</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>T</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>106</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- JCB</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- JCB</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- JCB Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>106</SeqID>
+        <Bank>JCB卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>JCB</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- JCB</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>107</CreditCardType>
+        <CreditCardName>境外发行信用卡 -- JCB</CreditCardName>
+        <CreditCardBig5Name>挂祇︽獺ノ -- JCB</CreditCardBig5Name>
+        <CreditCardeName>Overseas Issued Credit card -- JCB Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>107</SeqID>
+        <Bank>JCB卡</Bank>
+        <CreditCardNational>I</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName>JCB</BankShortName>
+        <ListParameter>32</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name>瓣悔 -- JCB</HK_Big5Name>
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>200</CreditCardType>
+        <CreditCardName>银联信用卡-标准/非标准(冲突无效)</CreditCardName>
+        <CreditCardBig5Name />
+        <CreditCardeName>UnionPay creditcard-Standard/Nonstandard</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>200</SeqID>
+        <Bank>银联信用卡</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName />
+        <ListParameter>0</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>F</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>F</UseFltGuarantee>
+        <UsePkgPay>F</UsePkgPay>
+        <UsePkgGuarantee>F</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>F</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>T</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>2</CreditCardType>
+        <CreditCardName>中国工商银行 -- 牡丹卡</CreditCardName>
+        <CreditCardBig5Name>い瓣坝蝗︽ -- ╠う</CreditCardBig5Name>
+        <CreditCardeName>Industry &amp;amp; Commercial Bank of China -- Peony Card</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>254</SeqID>
+        <Bank>中国工商银行</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName>ICBC</BankShortName>
+        <ListParameter>127</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>T</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>F</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>500</CreditCardType>
+        <CreditCardName>锟斤拷锟斤拷锟斤拷锟矫匡拷-锟斤拷准/锟角憋拷准(500</CreditCardName>
+        <CreditCardBig5Name />
+        <CreditCardeName>UnionPay creditcard-Standard/Nonstandard</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>500</SeqID>
+        <Bank>锟斤拷锟斤拷锟斤拷锟矫匡拷</Bank>
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>A         </ActionMode>
+        <BankShortName />
+        <ListParameter>127</ListParameter>
+        <IsJJK>F</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>F</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>F</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>F</UsePkgGuarantee>
+        <UseCorpHtlPay>F</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>F</UseCorpHtlGuarantee>
+        <UseCorpFltPay>F</UseCorpFltPay>
+        <UseCorpFltGuarantee>F</UseCorpFltGuarantee>
+        <UseCorpPkgPay>F</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>F</UseCorpPkgGuarantee>
+        <BVerifyNo>T</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>T</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        <CreditCardTypeInfoResponseItem>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardType>1000</CreditCardType>
+        <CreditCardName>银联储蓄卡快捷</CreditCardName>
+        <CreditCardBig5Name />
+        <CreditCardeName>DepositCard</CreditCardeName>
+        <Active>T</Active>
+        <SeqID>1000</SeqID>
+        <Bank />
+        <CreditCardNational>N</CreditCardNational>
+        <ActionMode>H         </ActionMode>
+        <BankShortName />
+        <ListParameter>127</ListParameter>
+        <IsJJK>T</IsJJK>
+        <UseNewSystem>T</UseNewSystem>
+        <HK_Big5Name />
+        <UseHtlPay>T</UseHtlPay>
+        <UseHtlGuarantee>T</UseHtlGuarantee>
+        <UseFltPay>T</UseFltPay>
+        <UseFltGuarantee>T</UseFltGuarantee>
+        <UsePkgPay>T</UsePkgPay>
+        <UsePkgGuarantee>T</UsePkgGuarantee>
+        <UseCorpHtlPay>T</UseCorpHtlPay>
+        <UseCorpHtlGuarantee>T</UseCorpHtlGuarantee>
+        <UseCorpFltPay>T</UseCorpFltPay>
+        <UseCorpFltGuarantee>T</UseCorpFltGuarantee>
+        <UseCorpPkgPay>T</UseCorpPkgPay>
+        <UseCorpPkgGuarantee>T</UseCorpPkgGuarantee>
+        <BVerifyNo>F</BVerifyNo>
+        <BUseGreen>F</BUseGreen>
+        <IsNeedForeignCardExtend>F</IsNeedForeignCardExtend>
+        <IsNeedPhoneNo>T</IsNeedPhoneNo>
+        </CreditCardTypeInfoResponseItem>
+        </CreditCardTypeItems>
+        </GetCreditCardTypeInfoResponse>
+        </Response>";
 
-            return @"<?xml version='1.0'?><Response><Header ServerIP='10.2.254.17' Culture='cn' ShouldRecordPerformanceTime='false' UserID='410471' RequestID='8bec1642-b0fb-4cb1-9784-6ae195aa2533' ResultCode='Success' ResultNo='0' ResultMsg='成功' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fat18' /><InqurieMerchantPayWayResponse><MerchantID>200124</MerchantID><MerchantName>讨盘缠</MerchantName><ForeignCardCharge>3.00</ForeignCardCharge><EnabledDCC>false</EnabledDCC><UserInformation><IsNeedCheckPhoneNo>false</IsNeedCheckPhoneNo><IsNeedVerifyUserPhoneForCreditCard>false</IsNeedVerifyUserPhoneForCreditCard></UserInformation><IsWalletAvailable>true</IsWalletAvailable><TMPayItems><EnableTMPayType>3</EnableTMPayType></TMPayItems><PaymentCatalogs><PaymentCatalogItem><PaymentCatalogID>2</PaymentCatalogID><CatalogName>网上支付</CatalogName><CatalogCode>EBank</CatalogCode><TipsToPay /><CatalogDescription>&lt;p class='paycredit_info2'&gt; 1.订单提交成功后会自动跳转至银行支付页面,请及时支付。&lt;/p&gt; &lt;p class='paycredit_info2'&gt; 2.支付成功后我司会尽快安排出票,最终出票情况以我司确认为准。&lt;/p&gt; &lt;p class='paycredit_info2'&gt; 3.提交后30分钟仍未付款,我司会取消订单。&lt;/p&gt;</CatalogDescription><PaymentWayItems><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>Alipay</PaymentWayID><PaymentWayName>支付宝</PaymentWayName><PaymentWayGlobalName /><PrepayType>ALPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>&lt;p class='paycredit_info'&gt; 注意事项：1.订单提交成功后会自动跳转至支付宝网站,请及时支付。&lt;/p&gt; &lt;p class='paycredit_info2'&gt; 2.支付成功后我司会尽快安排出票,最终出票情况以我司确认为准。&lt;/p&gt; &lt;p class='paycredit_info2'&gt; 3.提交后30分钟仍未付款,我司会取消订单。&lt;/p&gt;</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>EB_ICBC_Alipay</PaymentWayID><PaymentWayName>工行网银</PaymentWayName><PaymentWayGlobalName /><PrepayType>ALPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Manual</ActionMode><PromotionText /><Descrption>&lt;p class='paycredit_info'&gt;注意事项：柜面注册密码客户：单笔和每日累计消费限额为300元；口令卡客户：未开通短信认证,单笔消费限额500元,每日累计消费限额1000元&lt;br /&gt;&lt;span style='padding-left:60px;'&gt;已开通短信认证,单笔消费限额2000元,每日累计消费限额5000元；U盾客户单笔和每日累计消费限额为100万元。&lt;/span&gt;&lt;/p&gt;</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>EB_MobileAlipay</PaymentWayID><PaymentWayName>移动版支付宝</PaymentWayName><PaymentWayGlobalName /><PrepayType>MAPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Auto</ActionMode><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>EB_MobileUnionPay</PaymentWayID><PaymentWayName>移动版银联在线支付</PaymentWayName><PaymentWayGlobalName /><PrepayType>MUPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Auto</ActionMode><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>EB_UnionPay</PaymentWayID><PaymentWayName>银联在线支付</PaymentWayName><PaymentWayGlobalName /><PrepayType>UNPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>WechatScanCode</PaymentWayID><PaymentWayName>微信支付 </PaymentWayName><PaymentWayGlobalName /><PrepayType>WSCAN</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>微信支付 (公众账号)</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>EB_BOC</PaymentWayID><PaymentWayName>中国银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>BCPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Manual</ActionMode><PromotionText /><Descrption>&lt;p class='paycredit_info'&gt;注意事项：支持借记卡注册用户,单笔消费限额10,000元,当日累计消费限额50,000元。&lt;/p&gt;</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>EB_CMB</PaymentWayID><PaymentWayName>招商银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CMPAY</PrepayType><SubPaySystem>3</SubPaySystem><PaySystemName>第三方支付</PaySystemName><ActionMode>Manual</ActionMode><PromotionText /><Descrption>&lt;p class='paycredit_info'&gt;注意事项：支持借记卡支付,其中大众版网银用户单笔消费限额为5,000元,每日累计消费限额为10,000元,专业版用户无额度限制。&lt;/p&gt;</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem></PaymentWayItems></PaymentCatalogItem><PaymentCatalogItem><PaymentCatalogID>26</PaymentCatalogID><CatalogName>钱包</CatalogName><CatalogCode>CtripWallet</CatalogCode><TipsToPay /><CatalogDescription>钱包</CatalogDescription><PaymentWayItems><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>CashAccountPay</PaymentWayID><PaymentWayName>账户余额</PaymentWayName><PaymentWayGlobalName /><PrepayType>CAPAY</PrepayType><SubPaySystem>9</SubPaySystem><PaySystemName>现金账户支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>账户余额(钱包)</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>TMPAY_XING</PaymentWayID><PaymentWayName>礼品卡-任我行</PaymentWayName><PaymentWayGlobalName /><PrepayType>TMPAY</PrepayType><SubPaySystem>7</SubPaySystem><PaySystemName>游票支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>礼品卡-任我行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem></PaymentWayItems></PaymentCatalogItem><PaymentCatalogItem><PaymentCatalogID>30</PaymentCatalogID><CatalogName>钱包担保</CatalogName><CatalogCode>CtripWalletGuarantee</CatalogCode><TipsToPay /><PaymentWayItems><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>CashAccountPay_Guarantee</PaymentWayID><PaymentWayName>账户余额担保</PaymentWayName><PaymentWayGlobalName /><PrepayType>CAPAY</PrepayType><SubPaySystem>9</SubPaySystem><PaySystemName>现金账户支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>账户余额担保(钱包)</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem></PaymentWayItems></PaymentCatalogItem><PaymentCatalogItem><PaymentCatalogID>1</PaymentCatalogID><CatalogName>信用卡</CatalogName><CatalogCode>CreditCard</CatalogCode><TipsToPay /><CatalogDescription>&lt;p class='paycredit_info'&gt; 注意事项：预订距机票起飞时间24小时内的订单不提供境外信用卡支付,电话预订机票不提供境外信用卡支付和担保。&lt;/p&gt;</CatalogDescription><PaymentWayItems><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1</CreditCardType><CreditCardBankID>1</CreditCardBankID><PaymentWayID>CC_BOC</PaymentWayID><PaymentWayName>中国银行</PaymentWayName><PaymentWayGlobalName>Bank of China</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>15</CreditCardType><CreditCardBankID>15</CreditCardBankID><PaymentWayID>CC_CEBBANK</PaymentWayID><PaymentWayName>光大银行</PaymentWayName><PaymentWayGlobalName>China Everybright Bank</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>11</CreditCardType><CreditCardBankID>11</CreditCardBankID><PaymentWayID>CC_CMB</PaymentWayID><PaymentWayName>招商银行</PaymentWayName><PaymentWayGlobalName>China Merchants Bank</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>3</CreditCardType><CreditCardBankID>3</CreditCardBankID><PaymentWayID>CC_COMM</PaymentWayID><PaymentWayName>交通银行</PaymentWayName><PaymentWayGlobalName>China Communication Bank</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>2</CreditCardType><CreditCardBankID>2</CreditCardBankID><PaymentWayID>CC_ICBC</PaymentWayID><PaymentWayName>工商银行</PaymentWayName><PaymentWayGlobalName>Industry &amp; Commercial Bank of China</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>22</CreditCardType><CreditCardBankID>22</CreditCardBankID><PaymentWayID>CC_SDB</PaymentWayID><PaymentWayName>深发银行</PaymentWayName><PaymentWayGlobalName>Shenzhen Development Bank</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>22</CreditCardType><CreditCardBankID>22</CreditCardBankID><PaymentWayID>CC_SPABANK</PaymentWayID><PaymentWayName>平安银行</PaymentWayName><PaymentWayGlobalName>Ping An Bank</PaymentWayGlobalName><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption /><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem></PaymentWayItems></PaymentCatalogItem><PaymentCatalogItem><PaymentCatalogID>16</PaymentCatalogID><CatalogName>储蓄卡快捷</CatalogName><CatalogCode>DepositCard</CatalogCode><TipsToPay /><CatalogDescription>储蓄卡快捷</CatalogDescription><PaymentWayItems><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1128</CreditCardBankID><PaymentWayID>DQ_ABC</PaymentWayID><PaymentWayName>农业银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>农业银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1129</CreditCardBankID><PaymentWayID>DQ_BOC</PaymentWayID><PaymentWayName>中国银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>中国银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1130</CreditCardBankID><PaymentWayID>DQ_CCB</PaymentWayID><PaymentWayName>建设银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>建设银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1138</CreditCardBankID><PaymentWayID>DQ_CIB</PaymentWayID><PaymentWayName>兴业银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>兴业银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1137</CreditCardBankID><PaymentWayID>DQ_CMB</PaymentWayID><PaymentWayName>招商银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>招商银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1135</CreditCardBankID><PaymentWayID>DQ_CMBC</PaymentWayID><PaymentWayName>民生银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>民生银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>1000</CreditCardType><CreditCardBankID>1131</CreditCardBankID><PaymentWayID>DQ_COMM</PaymentWayID><PaymentWayName>交通银行</PaymentWayName><PaymentWayGlobalName /><PrepayType>CCARD</PrepayType><SubPaySystem>2</SubPaySystem><PaySystemName>银行卡支付</PaySystemName><ActionMode>Auto</ActionMode><Descrption>交通银行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>true</IsSupportRealTime></PaymentWayItem></PaymentWayItems></PaymentCatalogItem><PaymentCatalogItem><PaymentCatalogID>31</PaymentCatalogID><CatalogName>礼品卡担保</CatalogName><CatalogCode>TMPayGuarantee</CatalogCode><TipsToPay /><PaymentWayItems><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>TMPAY_XING_Guarantee</PaymentWayID><PaymentWayName>礼品卡担保-任我行</PaymentWayName><PaymentWayGlobalName /><PrepayType>TMPAY</PrepayType><SubPaySystem>7</SubPaySystem><PaySystemName>游票支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>礼品卡担保-任我行</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>TMPAY_YOU_Guarantee</PaymentWayID><PaymentWayName>礼品卡担保-任我游</PaymentWayName><PaymentWayGlobalName /><PrepayType>TMPAY</PrepayType><SubPaySystem>7</SubPaySystem><PaySystemName>游票支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>礼品卡担保-任我游</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem><PaymentWayItem><IsSupportPreAuth>false</IsSupportPreAuth><CreditCardType>0</CreditCardType><CreditCardBankID>0</CreditCardBankID><PaymentWayID>TMPAY_ZHU_Guarantee</PaymentWayID><PaymentWayName>礼品卡担保-任我住</PaymentWayName><PaymentWayGlobalName /><PrepayType>TMPAY</PrepayType><SubPaySystem>7</SubPaySystem><PaySystemName>游票支付</PaySystemName><ActionMode>Manual</ActionMode><Descrption>礼品卡担保-任我住</Descrption><IsUsedCardAvailable>false</IsUsedCardAvailable><IsSupportRealTime>false</IsSupportRealTime></PaymentWayItem></PaymentWayItems></PaymentCatalogItem></PaymentCatalogs></InqurieMerchantPayWayResponse></Response>";
+            string req4 = @"<?xml version='1.0'?>
+        <Request>
+        <Header UserID='340101' RequestType='AccCash.CreditCard.GetPayUsedListInfoNew' RequestID='d91af7a2-4024-47ba-bc27-de3d82115ec0' ClientIP='172.16.146.78' AsyncRequest='false' Timeout='0' MessagePriority='3' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' UseMemoryQ='false' />
+        <GetPayUsedListInfoNewRequest>
+        <Uid>13811118888</Uid>
+        <CreditCardType>-2147483648</CreditCardType>
+        <PathType>G</PathType>
+        </GetPayUsedListInfoNewRequest>
+        </Request>";
+            string res4 = @"<?xml version='1.0'?>
+        <Response>
+        <Header ServerIP='10.2.6.47' ShouldRecordPerformanceTime='false' UserID='340101' RequestID='d91af7a2-4024-47ba-bc27-de3d82115ec0' ResultCode='Success' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' />
+        <GetPayUsedListInfoNewResponse>
+        <PayUsedListNewItems>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2480789</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439226******9140</CardNoTenCode>
+        <CreditCardType>11</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30032988</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-08-25T16:52:54.583</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRPFA29602DF1D42BC43C68506D59BDD42B</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>439226|40</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2480789</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439226******9140</CardNoTenCode>
+        <CreditCardType>57</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30032988</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-08-25T16:52:54.583</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRPFA29602DF1D42BC43C68506D59BDD42B</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>439226|40</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2480789</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439226******9140</CardNoTenCode>
+        <CreditCardType>76</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30032988</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-08-25T16:52:54.583</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRPFA29602DF1D42BC43C68506D59BDD42B</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>439226|40</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2480789</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439226******9140</CardNoTenCode>
+        <CreditCardType>77</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30032988</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-08-25T16:52:54.583</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRPFA29602DF1D42BC43C68506D59BDD42B</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>439226|40</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2480789</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439226******9140</CardNoTenCode>
+        <CreditCardType>558</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30032988</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-08-25T16:52:54.583</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRPFA29602DF1D42BC43C68506D59BDD42B</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>439226|40</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483509</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>622922******2003</CardNoTenCode>
+        <CreditCardType>20</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548218</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-04T15:37:59.7</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>622922|03</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483509</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>622922******2003</CardNoTenCode>
+        <CreditCardType>564</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548218</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-04T15:37:59.7</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>622922|03</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2481452</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>622588******9791</CardNoTenCode>
+        <CreditCardType>102</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30026916</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-09-05T10:34:45.057</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP3C1A3ECFC56F7B64F8890ACF80497BC5</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>622588|91</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2481452</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>622588******9791</CardNoTenCode>
+        <CreditCardType>1137</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30026916</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-09-05T10:34:45.057</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP3C1A3ECFC56F7B64F8890ACF80497BC5</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>622588|91</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2481452</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>622588******9791</CardNoTenCode>
+        <CreditCardType>1</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30026916</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-09-05T10:34:45.057</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP3C1A3ECFC56F7B64F8890ACF80497BC5</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>622588|91</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483530</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>427020******2555</CardNoTenCode>
+        <CreditCardType>2</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30031180</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T15:07:58.183</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>427020|55</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483530</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>427020******2555</CardNoTenCode>
+        <CreditCardType>57</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30031180</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T15:07:58.183</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>427020|55</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483530</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>427020******2555</CardNoTenCode>
+        <CreditCardType>76</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30031180</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T15:07:58.183</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>427020|55</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483530</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>427020******2555</CardNoTenCode>
+        <CreditCardType>77</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30031180</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T15:07:58.183</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>427020|55</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483530</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>427020******2555</CardNoTenCode>
+        <CreditCardType>554</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>30031180</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T15:07:58.183</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>427020|55</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2479009</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>300000******0004</CardNoTenCode>
+        <CreditCardType>9</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29280194</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-07-22T11:13:33.61</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP88D82DF4CD1EC9C0EEA57B73D5C389C2</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>300000|04</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2479009</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>300000******0004</CardNoTenCode>
+        <CreditCardType>59</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29280194</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-07-22T11:13:33.61</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP88D82DF4CD1EC9C0EEA57B73D5C389C2</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>300000|04</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484201</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>407405******0008</CardNoTenCode>
+        <CreditCardType>16</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026927</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-03T11:05:03.97</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP09369F80BB5CBCA3320A2FB847387DCA</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>407405|08</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484201</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>407405******0008</CardNoTenCode>
+        <CreditCardType>57</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026927</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-03T11:05:03.97</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP09369F80BB5CBCA3320A2FB847387DCA</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>407405|08</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484201</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>407405******0008</CardNoTenCode>
+        <CreditCardType>76</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026927</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-03T11:05:03.97</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP09369F80BB5CBCA3320A2FB847387DCA</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>407405|08</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484201</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>407405******0008</CardNoTenCode>
+        <CreditCardType>77</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026927</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-03T11:05:03.97</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP09369F80BB5CBCA3320A2FB847387DCA</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>407405|08</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484201</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>407405******0008</CardNoTenCode>
+        <CreditCardType>561</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026927</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-03T11:05:03.97</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP09369F80BB5CBCA3320A2FB847387DCA</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>407405|08</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484180</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>622346******1002</CardNoTenCode>
+        <CreditCardType>1</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026224</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-02T14:29:02.303</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP98D37F84AA7563C7816C9A841325C95D</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>622346|02</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2484180</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>622346******1002</CardNoTenCode>
+        <CreditCardType>553</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>30026224</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-12-02T14:29:02.303</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP98D37F84AA7563C7816C9A841325C95D</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>622346|02</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483529</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>402791******0001</CardNoTenCode>
+        <CreditCardType>2</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548438</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T14:59:20.473</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+       <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>402791|01</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483529</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>402791******0001</CardNoTenCode>
+        <CreditCardType>57</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548438</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T14:59:20.473</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>402791|01</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483529</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>402791******0001</CardNoTenCode>
+        <CreditCardType>76</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548438</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T14:59:20.473</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>402791|01</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483529</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>402791******0001</CardNoTenCode>
+        <CreditCardType>77</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548438</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T14:59:20.473</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>402791|01</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2483529</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>402791******0001</CardNoTenCode>
+        <CreditCardType>1127</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29548438</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-11-05T14:59:20.473</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>402791|01</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2482808</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439225******0009</CardNoTenCode>
+        <CreditCardType>11</CreditCardType>
+        <ChannelStatus>T</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29546748</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-10-14T14:23:01.077</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>F</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRPD7CC4B9C6A3CE27A0805E0503D84AAAF</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>439225|09</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2482808</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439225******0009</CardNoTenCode>
+        <CreditCardType>57</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29546748</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-10-14T14:23:01.077</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRPD7CC4B9C6A3CE27A0805E0503D84AAAF</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>439225|09</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2482808</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439225******0009</CardNoTenCode>
+        <CreditCardType>76</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29546748</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-10-14T14:23:01.077</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRPD7CC4B9C6A3CE27A0805E0503D84AAAF</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>439225|09</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2482808</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439225******0009</CardNoTenCode>
+        <CreditCardType>77</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29546748</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-10-14T14:23:01.077</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>F</BIdType>
+        <BIdNumber>F</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>I</CreditCardNational>
+        <Validity>CTRPD7CC4B9C6A3CE27A0805E0503D84AAAF</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>F</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>439225|09</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2482808</RecordID>
+        <Uid>13811118888         </Uid>
+        <CardNoTenCode>439225******0009</CardNoTenCode>
+        <CreditCardType>558</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>T</CardStatus>
+        <CardInfoId>29546748</CardInfoId>
+        <PCPass>T</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-10-14T14:23:01.077</CreateDate>
+        <BVerifyNo>T</BVerifyNo>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRPD7CC4B9C6A3CE27A0805E0503D84AAAF</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>F</IsNeedValidity>
+        <ShowCardNo>439225|09</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        <PayUsedListInfoNewResponseItem>
+        <RecordID>2481984</RecordID>
+        <Uid>13811118888</Uid>
+        <CardNoTenCode>622588******6569</CardNoTenCode>
+        <CreditCardType>1137</CreditCardType>
+        <ChannelStatus>G</ChannelStatus>
+        <CardStatus>G</CardStatus>
+        <CardInfoId>29275841</CardInfoId>
+        <PCPass>F</PCPass>
+        <GCPass>T</GCPass>
+        <CreateDate>2014-09-22T19:14:35.38</CreateDate>
+        <BVerifyNo>F</BVerifyNo>
+        <BIdType>T</BIdType>
+        <BIdNumber>T</BIdNumber>
+        <BCardHolder>T</BCardHolder>
+        <CreditCardNational>N</CreditCardNational>
+        <Validity>CTRP3C1A3ECFC56F7B64F8890ACF80497BC5</Validity>
+        <IsBlackCard>F</IsBlackCard>
+        <IsNeedPhone>T</IsNeedPhone>
+        <IsNeedValidity>T</IsNeedValidity>
+        <ShowCardNo>622588|69</ShowCardNo>
+        </PayUsedListInfoNewResponseItem>
+        </PayUsedListNewItems>
+        </GetPayUsedListInfoNewResponse>
+        </Response>";
+
+            string req5 = @"<?xml version='1.0'?>
+        <Request>
+        <Header UserID='340101' RequestType='AccCash.CreditCard.GetCreditCardInfo' RequestID='29cd1035-74a7-466a-bb95-88f4370e030a' ClientIP='172.16.146.78' AsyncRequest='false' Timeout='0' MessagePriority='3' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' UseMemoryQ='false' />
+        <GetCreditCardInfoRequest>
+        <CardInfoId>30032988</CardInfoId>
+        <CardInfoId>30032988</CardInfoId>
+        <CardInfoId>30032988</CardInfoId>
+        <CardInfoId>30032988</CardInfoId>
+        <CardInfoId>30032988</CardInfoId>
+        <CardInfoId>29548218</CardInfoId>
+        <CardInfoId>29548218</CardInfoId>
+        <CardInfoId>30026916</CardInfoId>
+        <CardInfoId>30026916</CardInfoId>
+        <CardInfoId>30026916</CardInfoId>
+        <CardInfoId>30031180</CardInfoId>
+        <CardInfoId>30031180</CardInfoId>
+        <CardInfoId>30031180</CardInfoId>
+        <CardInfoId>30031180</CardInfoId>
+        <CardInfoId>30031180</CardInfoId>
+        <CardInfoId>29280194</CardInfoId>
+        <CardInfoId>29280194</CardInfoId>
+        <CardInfoId>30026927</CardInfoId>
+        <CardInfoId>30026927</CardInfoId>
+        <CardInfoId>30026927</CardInfoId>
+        <CardInfoId>30026927</CardInfoId>
+        <CardInfoId>30026927</CardInfoId>
+        <CardInfoId>30026224</CardInfoId>
+        <CardInfoId>30026224</CardInfoId>
+        <CardInfoId>29548438</CardInfoId>
+        <CardInfoId>29548438</CardInfoId>
+        <CardInfoId>29548438</CardInfoId>
+        <CardInfoId>29548438</CardInfoId>
+        <CardInfoId>29548438</CardInfoId>
+        <CardInfoId>29546748</CardInfoId>
+        <CardInfoId>29546748</CardInfoId>
+        <CardInfoId>29546748</CardInfoId>
+        <CardInfoId>29546748</CardInfoId>
+        <CardInfoId>29546748</CardInfoId>
+        <CardInfoId>29275841</CardInfoId>
+        </GetCreditCardInfoRequest>
+        </Request>";
+
+            string res5 = @"<?xml version='1.0'?>
+        <Response>
+        <Header ServerIP='10.2.6.47' ShouldRecordPerformanceTime='false' UserID='340101' RequestID='29cd1035-74a7-466a-bb95-88f4370e030a' ResultCode='Success' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' />
+        <GetCreditCardInfoResponse>
+        <CreditCardItems>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>29275841</CardInfoId>
+        <CreditCardType>1137</CreditCardType>
+        <CardTypeName>储蓄卡快捷（招商银行）</CardTypeName>
+        <CreditCardNumber>CTRP8F0848DD2FD0F801DC15079EEE39AD7C</CreditCardNumber>
+        <CCardNoCode>FEE868DF33F82A64C59B01189908D00C</CCardNoCode>
+        <CValidityCode>EC7D9D60222157632EF18B0B5EE99F38</CValidityCode>
+        <CardBin>622588</CardBin>
+        <Validity>CTRP3C1A3ECFC56F7B64F8890ACF80497BC5</Validity>
+        <CardHolder>嗯嗯额</CardHolder>
+        <IdCardType>2</IdCardType>
+        <IdNumber>34g5555555555555555555555555555555555</IdNumber>
+        <VerifyNo>CTRP82D9B4999CACFFFF63A02E6CE5A3A282</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality />
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue />
+        <BankOfCardIssue />
+        <CreateDate>2014-09-22T19:14:35</CreateDate>
+        <CardRiskNoPreCode>E7FAA18B61E1F4D8F09A3BAE0F80F5A9</CardRiskNoPreCode>
+        <CardRiskNoLastCode>5227FA9A19DCE7BA113F50A405DCAF09</CardRiskNoLastCode>
+        <PhoneNo>15055555555</PhoneNo>
+        <IsVerifyNoEmpty>F</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>29280194</CardInfoId>
+        <CreditCardType>9</CreditCardType>
+        <CardTypeName>境外发行信用卡 -- 大来(Diners Club)</CardTypeName>
+        <CreditCardNumber>CTRP71C0C8F3274701B0E06529EBCFE99879</CreditCardNumber>
+        <CCardNoCode>1DB3AB91361409B49FB92F470586279B</CCardNoCode>
+        <CValidityCode>6C401AA1FFA5C0F4C6BF4766DDB8F3EC</CValidityCode>
+        <CardBin>300000</CardBin>
+        <Validity>CTRP88D82DF4CD1EC9C0EEA57B73D5C389C2</Validity>
+        <CardHolder>ZHICHNG</CardHolder>
+        <IdCardType>0</IdCardType>
+        <IdNumber />
+        <VerifyNo />
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>T</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-09-28T10:19:40</CreateDate>
+        <CardRiskNoPreCode>759C4D33228B3FD088E39922D8AC05E1</CardRiskNoPreCode>
+        <CardRiskNoLastCode>95B09698FDA1F64AF16708FFB859EAB9</CardRiskNoLastCode>
+        <PhoneNo />
+        <IsVerifyNoEmpty>F</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>29546748</CardInfoId>
+        <CreditCardType>11</CreditCardType>
+        <CardTypeName>中国招商银行 -- 信用卡</CardTypeName>
+        <CreditCardNumber>CTRPA13F75FE8D370C6862BEB376016607BB</CreditCardNumber>
+        <CCardNoCode>6351A72CAA94E42ECFE22E1E2EF1C912</CCardNoCode>
+        <CValidityCode>96AB5CC2F028CE5A42CB0E728458B2DE</CValidityCode>
+        <CardBin>439225</CardBin>
+        <Validity>CTRPD7CC4B9C6A3CE27A0805E0503D84AAAF</Validity>
+        <CardHolder />
+        <IdCardType>0</IdCardType>
+        <IdNumber />
+        <VerifyNo>CTRP3A14C957237A82E9AF1D08DE17BB50E0</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-11-06T11:30:23</CreateDate>
+        <CardRiskNoPreCode>0AA7620D235C3D5D4E9A8273C72E87F3</CardRiskNoPreCode>
+        <CardRiskNoLastCode>29549A71A57F587D88209B9C1F1B7999</CardRiskNoLastCode>
+        <PhoneNo />
+        <IsVerifyNoEmpty>F</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>29548218</CardInfoId>
+        <CreditCardType>564</CreditCardType>
+        <CardTypeName>银联在线（兴业银行）</CardTypeName>
+        <CreditCardNumber>CTRPC9BE5009218564792AC282AC5E0D71B6</CreditCardNumber>
+        <CCardNoCode>9F5F6EE25FA88D4456417F98C807925C</CCardNoCode>
+        <CValidityCode>BE67CBB10E70F06468DD9C0AB46AA2AF</CValidityCode>
+        <CardBin>622922</CardBin>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <CardHolder>默哀</CardHolder>
+        <IdCardType>0</IdCardType>
+        <IdNumber />
+        <VerifyNo>CTRP0F553EDD7995F54E8DEC7A4740EAC17F</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-11-07T18:05:42</CreateDate>
+        <CardRiskNoPreCode>F43E50D6E0FD2B7D7B6E8230016EFB4C</CardRiskNoPreCode>
+        <CardRiskNoLastCode>A591024321C5E2BDBD23ED35F0574DDE</CardRiskNoLastCode>
+        <PhoneNo>13811118888</PhoneNo>
+        <IsVerifyNoEmpty>T</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>29548438</CardInfoId>
+        <CreditCardType>2</CreditCardType>
+        <CardTypeName>中国工商银行 -- 牡丹卡</CardTypeName>
+        <CreditCardNumber>CTRP97D2043F59E462D9EF4879185DB9F412</CreditCardNumber>
+        <CCardNoCode>F3C393B0C534635D63A0DDE11F94354C</CCardNoCode>
+        <CValidityCode>BE67CBB10E70F06468DD9C0AB46AA2AF</CValidityCode>
+        <CardBin>402791</CardBin>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <CardHolder>maomao</CardHolder>
+        <IdCardType>1</IdCardType>
+        <IdNumber>341181198501194237</IdNumber>
+        <VerifyNo>CTRP0F553EDD7995F54E8DEC7A4740EAC17F</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-11-10T10:57:59</CreateDate>
+        <CardRiskNoPreCode>6861032CA95668905302922371BB2E10</CardRiskNoPreCode>
+        <CardRiskNoLastCode>25BBDCD06C32D477F7FA1C3E4A91B032</CardRiskNoLastCode>
+        <PhoneNo />
+        <IsVerifyNoEmpty>T</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>30026224</CardInfoId>
+        <CreditCardType>1</CreditCardType>
+        <CardTypeName>中国银行 -- 长城卡</CardTypeName>
+        <CreditCardNumber>CTRP939AB78F700DDBADE846B5D4D14AE163</CreditCardNumber>
+        <CCardNoCode>0079A7A845EB03DA9C2AE23BBD02ACC5</CCardNoCode>
+        <CValidityCode>117AE08A6CF4E284F9C05EC8B7173A28</CValidityCode>
+        <CardBin>622346</CardBin>
+        <Validity>CTRP98D37F84AA7563C7816C9A841325C95D</Validity>
+        <CardHolder />
+        <IdCardType>0</IdCardType>
+        <IdNumber />
+        <VerifyNo>CTRP4ECD865D22D99C71F9A040D602E64E23</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality />
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue />
+        <BankOfCardIssue />
+        <CreateDate>2014-12-02T14:29:02</CreateDate>
+        <CardRiskNoPreCode>D7237609858FFC94313D6CBC043BE10F</CardRiskNoPreCode>
+        <CardRiskNoLastCode>FBA9D88164F3E2D9109EE770223212A0</CardRiskNoLastCode>
+        <PhoneNo />
+        <IsVerifyNoEmpty>F</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>30026916</CardInfoId>
+        <CreditCardType>1137</CreditCardType>
+        <CardTypeName>储蓄卡快捷（招商银行）</CardTypeName>
+        <CreditCardNumber>CTRPD1175FE13E48ECE7640F91C3E7C1CACD</CreditCardNumber>
+        <CCardNoCode>84BD230418094B82D6CF355AC73F7AB2</CCardNoCode>
+        <CValidityCode>EC7D9D60222157632EF18B0B5EE99F38</CValidityCode>
+        <CardBin>622588</CardBin>
+        <Validity>CTRP3C1A3ECFC56F7B64F8890ACF80497BC5</Validity>
+        <CardHolder>毛毛</CardHolder>
+        <IdCardType>1</IdCardType>
+        <IdNumber>341181198501194237</IdNumber>
+        <VerifyNo>CTRP0F553EDD7995F54E8DEC7A4740EAC17F</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-12-03T11:00:19</CreateDate>
+        <CardRiskNoPreCode>5AEC098A042522AC9A0B4AEF9168B1C5</CardRiskNoPreCode>
+        <CardRiskNoLastCode>44089D5F715BC4112AD95576555D0F4E</CardRiskNoLastCode>
+        <PhoneNo>18155454545</PhoneNo>
+        <IsVerifyNoEmpty>T</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>30026927</CardInfoId>
+        <CreditCardType>16</CreditCardType>
+        <CardTypeName>中国民生银行 -- 信用卡</CardTypeName>
+        <CreditCardNumber>CTRPD6E8B198A56BCC76FDD2BFF56BAF3B81</CreditCardNumber>
+        <CCardNoCode>483089FAE73DB6CB4DCC22EA844DE01C</CCardNoCode>
+        <CValidityCode>D2D37B889E1A2908EEB7694DBD43C57D</CValidityCode>
+        <CardBin>407405</CardBin>
+        <Validity>CTRP09369F80BB5CBCA3320A2FB847387DCA</Validity>
+        <CardHolder />
+        <IdCardType>0</IdCardType>
+        <IdNumber />
+        <VerifyNo>CTRP90A245F9306F2B41F22842FBBC41FE29</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality />
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue />
+        <BankOfCardIssue />
+        <CreateDate>2014-12-03T11:05:03</CreateDate>
+        <CardRiskNoPreCode>089F21D6F1E32287C02CB6E6FBF6D22C</CardRiskNoPreCode>
+        <CardRiskNoLastCode>926ABAE84A4BD33C834BC6B981B8CF30</CardRiskNoLastCode>
+        <PhoneNo />
+        <IsVerifyNoEmpty>F</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>30031180</CardInfoId>
+        <CreditCardType>2</CreditCardType>
+        <CardTypeName>中国工商银行 -- 牡丹卡</CardTypeName>
+        <CreditCardNumber>CTRPD12024D349886E5F2599D11B7CB9272B</CreditCardNumber>
+        <CCardNoCode>550ED66581D5A35082DA1F83F01920E1</CCardNoCode>
+        <CValidityCode>BE67CBB10E70F06468DD9C0AB46AA2AF</CValidityCode>
+        <CardBin>427020</CardBin>
+        <Validity>CTRP23923EC0E89E068F0FCB475898BBA2B7</Validity>
+        <CardHolder>玩家</CardHolder>
+        <IdCardType>2</IdCardType>
+        <IdNumber>Cd12345</IdNumber>
+        <VerifyNo>CTRP0F553EDD7995F54E8DEC7A4740EAC17F</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-12-09T21:04:34</CreateDate>
+        <CardRiskNoPreCode>EDD6FFFCAFE4F394FF96E149C19A429A</CardRiskNoPreCode>
+        <CardRiskNoLastCode>5ACDC9CA5D99AE66AFDFE1EEA0E3B26B</CardRiskNoLastCode>
+        <PhoneNo>15954444444</PhoneNo>
+        <IsVerifyNoEmpty>T</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        <CreditCardInfoResponseItem>
+        <CardInfoId>30032988</CardInfoId>
+        <CreditCardType>11</CreditCardType>
+        <CardTypeName>中国招商银行 -- 信用卡</CardTypeName>
+        <CreditCardNumber>CTRP5EDAF1582F6798C118968C0E582314D5</CreditCardNumber>
+        <CCardNoCode>FD15FC4A672A81BE4DB3A6300EF57025</CCardNoCode>
+        <CValidityCode>13174A5AE720F555C82452F457F25F39</CValidityCode>
+        <CardBin>439226</CardBin>
+        <Validity>CTRPFA29602DF1D42BC43C68506D59BDD42B</Validity>
+        <CardHolder>毛毛</CardHolder>
+        <IdCardType>1</IdCardType>
+        <IdNumber>341181198501194237</IdNumber>
+        <VerifyNo>CTRP0F4D9964918A2623148C2C5B158D9FC0</VerifyNo>
+        <CurrencyType>U</CurrencyType>
+        <VM_Type>U</VM_Type>
+        <IsForeignCard>F</IsForeignCard>
+        <LocalCardType>U</LocalCardType>
+        <AgreementCode />
+        <Nationality>  </Nationality>
+        <StateName />
+        <BillingAddress />
+        <ZipCode />
+        <Nationalityofisuue>  </Nationalityofisuue>
+        <BankOfCardIssue />
+        <CreateDate>2014-12-11T21:28:26</CreateDate>
+        <CardRiskNoPreCode>51946DB4D249E6BDB61AFD221BD8075F</CardRiskNoPreCode>
+        <CardRiskNoLastCode>E36E62F84744EA6916927027C9D651AD</CardRiskNoLastCode>
+        <PhoneNo>13811118888</PhoneNo>
+        <IsVerifyNoEmpty>F</IsVerifyNoEmpty>
+        </CreditCardInfoResponseItem>
+        </CreditCardItems>
+        </GetCreditCardInfoResponse>
+        </Response>";
+
+            string req6 = @"<?xml version='1.0'?>
+        <Request>
+        <Header UserID='340101' RequestID='1cf0e963-3a7e-41ed-898d-a0ffdc13a06c' RequestType='Payment.Base.MerchantService.QueryCustomeDeductPayWay' ClientIP='172.16.146.78' AsyncRequest='false' Timeout='0' MessagePriority='3' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' UseMemoryQ='false' />
+        <QueryCustomeDeductPayWayRequest>
+        <Uid>13811118888</Uid>
+        </QueryCustomeDeductPayWayRequest>
+        </Request>";
+            string res6 = @"<?xml version='1.0'?>
+        <Response>
+        <Header ServerIP='10.2.254.17' ShouldRecordPerformanceTime='false' UserID='340101' RequestID='1cf0e963-3a7e-41ed-898d-a0ffdc13a06c' ResultCode='Success' ResultNo='0' ResultMsg='成功' AssemblyVersion='2.8.0.0' RequestBodySize='0' SerializeMode='Xml' RouteStep='1' Environment='fws' />
+        <QueryCustomeDeductPayWayResponse>
+        <PayWayItems>
+        <PayWayItem>
+        <CatalogCode>CreditCard</CatalogCode>
+        <PaymentWayID>CC_CMB</PaymentWayID>
+        <Pre6Last2Code>439226|40</Pre6Last2Code>
+        <CardChannel>
+        <ChannelType>7</ChannelType>
+        <ChannelType>11</ChannelType>
+        <ChannelType>558</ChannelType>
+        </CardChannel>
+        </PayWayItem>
+        </PayWayItems>
+        </QueryCustomeDeductPayWayResponse>
+        </Response>";
+
+            removeUnNeededTag(reqXml);
+
+            var res = string.Empty;
+            xmlPattern.LoadXml(req1);
+            removeUnNeededTag(xmlPattern);
+            if (xmlPattern.InnerXml.Equals(reqXml.InnerXml))
+                res = res1;
+            xmlPattern.LoadXml(req2);
+            removeUnNeededTag(xmlPattern);
+            if (xmlPattern.InnerXml.Equals(reqXml.InnerXml))
+                res = res2;
+            xmlPattern.LoadXml(req3);
+            removeUnNeededTag(xmlPattern);
+            if (xmlPattern.InnerXml.Equals(reqXml.InnerXml))
+                res = res3;
+            xmlPattern.LoadXml(req4);
+            removeUnNeededTag(xmlPattern);
+            if (xmlPattern.InnerXml.Equals(reqXml.InnerXml))
+                res = res4;
+            xmlPattern.LoadXml(req5);
+            removeUnNeededTag(xmlPattern);
+            if (xmlPattern.InnerXml.Equals(reqXml.InnerXml))
+                res = res5;
+            xmlPattern.LoadXml(req6);
+            removeUnNeededTag(xmlPattern);
+            if (xmlPattern.InnerXml.Equals(reqXml.InnerXml))
+                res = res6;
+
+            return res;
+        }
+
+        private static void removeUnNeededTag(XmlDocument reqXml)
+        {
+            var xmlReqTmp = reqXml.SelectSingleNode("Request/Header") as XmlElement;
+            if (xmlReqTmp != null)
+                xmlReqTmp.RemoveAttribute("ClientIP");
+
+            xmlReqTmp = reqXml.SelectSingleNode("Request/Header") as XmlElement;
+            if (xmlReqTmp != null)
+                xmlReqTmp.RemoveAttribute("RequestID");
         }
     }
 }
