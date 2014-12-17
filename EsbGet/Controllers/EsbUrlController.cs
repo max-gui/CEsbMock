@@ -37,8 +37,18 @@ namespace EsbGet.Controllers
                     var guid = Guid.NewGuid();
                     var tag = guid.ToString() + Environment.TickCount;
                     var realUrl = a["WSUrl"].ToString();
+                    var wsName = a["WSName"].ToString();
+                    var webServiceId = a["WebServiceID"].ToString();
                     a["WSUrl"] = "http://windev/CtripEsbAsmx/WebService2.asmx?tag=" + tag;
-                    product = a.ToString();
+
+                    var tagValue = new
+                    {
+                        WSUrl = realUrl,
+                        WSName = wsName,
+                        WebServiceId = webServiceId,
+                    };
+
+                    string json = JsonConvert.SerializeObject(tagValue);
 
                     ConfigurationOptions config = new ConfigurationOptions
                     {
@@ -49,7 +59,7 @@ namespace EsbGet.Controllers
                     };
 
                     var redis = ConnectionMultiplexer.Connect(config);
-                    var t = redis.GetDatabase(10).StringSet(tag, realUrl,expiry:new TimeSpan(0,10,0));// subscribeSelfFilter(redis, subItem, waitTime, (e) => true);
+                    var t = redis.GetDatabase(10).StringSet(tag, json, expiry: new TimeSpan(0, 10, 0));// subscribeSelfFilter(redis, subItem, waitTime, (e) => true);
 
                     var res = new
                     {
