@@ -13,7 +13,7 @@ namespace EsbGet.Controllers
 {
     public class EsbUrlController : ApiController
     {
-        [Route("EsbUrlController/Pull")]
+        [Route("EsbUrlController/Pull/lookup.ashx")]
         [HttpGet]
         public object Pull()//string UserID, string RequestType, string Environment, string timestamp, string AppID)
         {
@@ -39,7 +39,7 @@ namespace EsbGet.Controllers
                     var realUrl = a["WSUrl"].ToString();
                     var wsName = a["WSName"].ToString();
                     var webServiceId = a["WebServiceID"].ToString();
-                    a["WSUrl"] = "http://windev/CtripEsbAsmx/WebService2.asmx?tag=" + tag;
+                    a["WSUrl"] = "http://10.2.8.70:8059/EsbGet/EsbUrlController/Pull/PullHelp.asmx?tag=" + tag;//"http://windev/CtripEsbAsmx/WebService2.asmx?tag=" + tag;
 
                     var tagValue = new
                     {
@@ -105,7 +105,7 @@ namespace EsbGet.Controllers
             return null;
         }
 
-        [Route("EsbUrlController/Get")]
+        [Route("EsbUrlController/Get/lookup.ashx")]
         [HttpGet]
         public object Get()
         {
@@ -134,7 +134,7 @@ namespace EsbGet.Controllers
 
                 WSName = "Payment.Base.MerchantService",
 
-                WSUrl = "http://10.2.8.70:8059/Asmx/webservice1.asmx",//"http://localhost/CtripEsbAsmx/WebService1.asmx",//"http://10.2.8.70:8059/Asmx/webservice1.asmx",
+                WSUrl = "http://10.2.8.70:8059/EsbGet/EsbUrlController/Get/GetHelp.asmx",//"http://localhost/CtripEsbAsmx/WebService1.asmx",//"http://10.2.8.70:8059/Asmx/webservice1.asmx",
 
                 WebServiceID = 410419
 
