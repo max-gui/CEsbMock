@@ -3,10 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtripEsbServer", "CtripEsbServer\CtripEsbServer.csproj", "{FC17E7AB-1E37-44D3-8EC0-746B5CE8AD33}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CtripEsbAsmx", "CtripEsbAsmx\CtripEsbAsmx.csproj", "{9A563CBE-2DF4-435B-A23B-3770FF741941}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EsbGet", "EsbGet\EsbGet.csproj", "{9FDE8B48-0CA2-42C7-8C8B-2C604252673B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EsbMockEntity", "EsbMockEntity\EsbMockEntity.csproj", "{185A6AD9-1B61-4C65-A8AD-79BC4E3F1802}"
@@ -20,24 +16,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{898705
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataRabbit", "DataRabbit\DataRabbit.csproj", "{A961D95A-CF66-4A75-96EE-537CEBA84646}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitSenderTest", "RabbitSenderTest\RabbitSenderTest.csproj", "{A21110C2-9D0C-4126-8D2F-8955B1010341}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RabbitRpcTest", "RabbitRpcTest\RabbitRpcTest.csproj", "{1D4CA380-2D21-48E9-9012-D213AD7CF511}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FC17E7AB-1E37-44D3-8EC0-746B5CE8AD33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FC17E7AB-1E37-44D3-8EC0-746B5CE8AD33}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FC17E7AB-1E37-44D3-8EC0-746B5CE8AD33}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FC17E7AB-1E37-44D3-8EC0-746B5CE8AD33}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A563CBE-2DF4-435B-A23B-3770FF741941}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A563CBE-2DF4-435B-A23B-3770FF741941}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9A563CBE-2DF4-435B-A23B-3770FF741941}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A563CBE-2DF4-435B-A23B-3770FF741941}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9FDE8B48-0CA2-42C7-8C8B-2C604252673B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9FDE8B48-0CA2-42C7-8C8B-2C604252673B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FDE8B48-0CA2-42C7-8C8B-2C604252673B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -50,14 +34,6 @@ Global
 		{A961D95A-CF66-4A75-96EE-537CEBA84646}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A961D95A-CF66-4A75-96EE-537CEBA84646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A961D95A-CF66-4A75-96EE-537CEBA84646}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A21110C2-9D0C-4126-8D2F-8955B1010341}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A21110C2-9D0C-4126-8D2F-8955B1010341}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A21110C2-9D0C-4126-8D2F-8955B1010341}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A21110C2-9D0C-4126-8D2F-8955B1010341}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1D4CA380-2D21-48E9-9012-D213AD7CF511}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1D4CA380-2D21-48E9-9012-D213AD7CF511}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1D4CA380-2D21-48E9-9012-D213AD7CF511}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1D4CA380-2D21-48E9-9012-D213AD7CF511}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

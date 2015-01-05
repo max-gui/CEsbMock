@@ -1,5 +1,5 @@
-﻿using EsbGet.RabbitRpcHelp;
-using EsbMockEntity;
+﻿using EsbGet.RabbitHelp;
+using MockEntity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StackExchange.Redis;
@@ -26,49 +26,12 @@ namespace EsbGet.EsbUrlController.Get
         [WebMethod]
         public string Request(string requestXML)
         {
-            XmlDocument reqXml = new XmlDocument();
-            reqXml.LoadXml(requestXML);
-
-            var xmlReqTmp = reqXml.SelectSingleNode("Request/Header") as XmlElement;
-            var requestType = xmlReqTmp.Attributes["RequestType"].InnerText;
-
-            reqXml.removeUnNeededTag();
-            var reqXmlToCompare = reqXml.InnerXml;
-
-            XmlDocument xmlPattern = new XmlDocument();
-
-            var res = string.Empty;
-            ConfigurationOptions config = new ConfigurationOptions
+            var requestHelp = new GetRequestHelp
             {
-                EndPoints =
-                        {
-                            { "10.2.24.151", 6388}
-                        }
+                RequestXML = requestXML
             };
 
-            var redis = ConnectionMultiplexer.Connect(config).GetDatabase(10);
-            res = redis.HashGetAsync(reqXmlToCompare,"response").Result.ToString();// .StringGet(reqXmlToCompare.GetHashCode().ToString());
-            res = string.Empty;
-
-            if (string.IsNullOrEmpty(res))
-            {
-                var queryTmp = new
-                {
-                    type = requestType,
-                    request = reqXmlToCompare
-                };
-
-                var rpcClient = new RPCClient();
-
-                var callMessage = JsonConvert.SerializeObject(queryTmp);
-
-                //Console.WriteLine(" [x] Requesting fib(30)");
-                res = rpcClient.Call(callMessage);
-                //Console.WriteLine(" [.] Got '{0}'", response);
-
-                rpcClient.Close();
-            }
-            return res; 
+            return requestHelp.Request("rpc_rabbitData"); //requestXML.RequestHelp();// RequestHelp(requestXML);
         }
     }
 }

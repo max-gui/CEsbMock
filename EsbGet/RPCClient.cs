@@ -6,8 +6,29 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-namespace EsbGet.RabbitRpcHelp
-{    
+namespace EsbGet.RabbitHelp
+{   
+    public class MessageClient
+    {
+        public void Send(string message, string channelName)
+        {
+            var factory = new ConnectionFactory() { HostName = "localhost" };
+            using (var connection = factory.CreateConnection())
+            {
+                using (var channel = connection.CreateModel())
+                {
+                    channel.QueueDeclare(channelName, false, false, false, null);
+
+                    //string message = JsonConvert.SerializeObject(infoTmp);// "Hello World!";
+                    var body = Encoding.UTF8.GetBytes(message);
+
+                    channel.BasicPublish("", channelName, null, body);
+                    //Console.WriteLine(" [x] Sent {0}", message);
+                }
+            }
+        }
+    }
+
     public class RPCClient
     {
         private IConnection connection;
@@ -25,7 +46,7 @@ namespace EsbGet.RabbitRpcHelp
             channel.BasicConsume(replyQueueName, true, consumer);
         }
 
-        public string Call(string message)
+        public string Call(string message,string pipeName)
         {
             var corrId = Guid.NewGuid().ToString();
             var props = channel.CreateBasicProperties();
@@ -33,7 +54,7 @@ namespace EsbGet.RabbitRpcHelp
             props.CorrelationId = corrId;
 
             var messageBytes = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish("", "rpc_rabbitData", props, messageBytes);
+            channel.BasicPublish("", pipeName, props, messageBytes);
 
             while (true)
             {

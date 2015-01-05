@@ -13,11 +13,12 @@ namespace EsbGet.Controllers
 {
     public class EsbUrlController : ApiController
     {
+        private static RedisHelp RSHelp = new RedisHelp();
         [Route("EsbUrlController/Pull/lookup.ashx")]
         [HttpGet]
         public object Pull()//string UserID, string RequestType, string Environment, string timestamp, string AppID)
         {
-            var esbUrl = "http://soa.fws.qa.nt.ctripcorp.com/soa.esb/lookup.ashx";
+            //var esbUrl = "http://soa.fws.qa.nt.ctripcorp.com/soa.esb/lookup.ashx";
             //var getUrl = esbUrl + this.Request.RequestUri.Query;
 
             using (var client = new HttpClient())
@@ -50,16 +51,8 @@ namespace EsbGet.Controllers
 
                     string json = JsonConvert.SerializeObject(tagValue);
 
-                    ConfigurationOptions config = new ConfigurationOptions
-                    {
-                        EndPoints =
-                        {
-                            { "10.2.24.151", 6388}
-                        }
-                    };
-
-                    var redis = ConnectionMultiplexer.Connect(config);
-                    var t = redis.GetDatabase(10).StringSet(tag, json, expiry: new TimeSpan(0, 10, 0));// subscribeSelfFilter(redis, subItem, waitTime, (e) => true);
+                    var redis = RSHelp.DB;
+                    var t = redis.StringSet(tag, json, expiry: new TimeSpan(0, 10, 0));// subscribeSelfFilter(redis, subItem, waitTime, (e) => true);
 
                     var res = new
                     {
