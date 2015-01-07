@@ -107,6 +107,14 @@
       <Project>{185a6ad9-1b61-4c65-a8ad-79bc4e3f1802}</Project>
       <Name>EsbMockEntity</Name>
     </ProjectReference>
+    <ProjectReference Include="..\EsbRedisHelp\EsbRedisHelp.csproj">
+      <Project>{3f21deb4-8950-47db-9a2d-0e17a97c99b4}</Project>
+      <Name>EsbRedisHelp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HashHelp\HashHelp.csproj">
+      <Project>{e83e50f9-a4a9-41a7-868f-f536ea2f56e7}</Project>
+      <Name>HashHelp</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">

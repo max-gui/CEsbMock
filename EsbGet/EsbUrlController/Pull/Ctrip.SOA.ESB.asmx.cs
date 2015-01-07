@@ -32,16 +32,16 @@ namespace EsbGet.EsbUrlController.Pull
         {
            //var redis = RSHelp.DB;
 
-            var realUrl = "http://soa.fws.qa.nt.ctripcorp.com/SOA.ESB/Ctrip.SOA.ESB.asmx";
-            var wsName = "Ctrip.SOA.ESB.asmx";
-            var webServiceId = wsName;
-            var ret = string.Empty;
+            //var realUrl = "http://soa.fws.qa.nt.ctripcorp.com/SOA.ESB/Ctrip.SOA.ESB.asmx";
+            //var wsName = "Ctrip.SOA.ESB.asmx";
+            //var webServiceId = wsName;
+            //var ret = string.Empty;
 
             var requestHelp = new PullRequestHelp
             {
-                WsName = wsName,
-                WebServiceId = webServiceId,
-                RealUrl = realUrl,
+                //WsName = wsName,
+                //WebServiceId = webServiceId,
+                //RealUrl = realUrl,
                 RequestXml = requestXML
             };
 

@@ -1,4 +1,5 @@
-﻿using MockEntity;
+﻿using EsbRedisHelp;
+using MockEntity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RabbitMQ.Client;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Web;
 using System.Web.Services;
 using System.Xml;
+using EsbGet.EsbUrlController;
 
 namespace EsbGet.EsbUrlController.Pull
 {
@@ -24,30 +26,39 @@ namespace EsbGet.EsbUrlController.Pull
     // [System.Web.Script.Services.ScriptService]
     public class PullHelp : System.Web.Services.WebService
     {
-        private static RedisHelp RSHelp = new RedisHelp();
+        //private static RedisHelp RSHelp = new RedisHelp();
 
         [WebMethod]
         public string Request(string requestXML)
         {
 
-            var tag = this.Context.Request.QueryString["tag"];
+            //var tag = this.Context.Request.QueryString["tag"];
             
-            var redis = RSHelp.DB;
-            var tagValue = redis.StringGet(tag);//.StringSet(tag, realUrl, expiry: new TimeSpan(0, 10, 0));// subscribeSelfFilter(redis, subItem, waitTime, (e) => true);
+            //var redis = RSHelp.DB;
+            //var tagValue = redis.StringGet(tag);//.StringSet(tag, realUrl, expiry: new TimeSpan(0, 10, 0));// subscribeSelfFilter(redis, subItem, waitTime, (e) => true);
             //redis.StringSet(tag, tagValue, expiry: new TimeSpan(0, 0, 1));
 
-            var a = JObject.Parse(tagValue);
-            var realUrl = a["WSUrl"].ToString();//"http://ws.bill.payment.fws.qa.nt.ctripcorp.com/payment-base-merchantservice/merchantservice.asmx";
-            var wsName = a["WSName"].ToString();
-            var webServiceId = a["WebServiceId"].ToString();
-            var ret = string.Empty;
+            //var a = JObject.Parse(tagValue);
+            //var realUrl = a["WSUrl"].ToString();//"http://ws.bill.payment.fws.qa.nt.ctripcorp.com/payment-base-merchantservice/merchantservice.asmx";
+            //var wsName = a["WSName"].ToString();
+            //var webServiceId = a["WebServiceId"].ToString();
+            //var ret = string.Empty;
+
+            //var xmlTmp = new XmlDocument();
+            //xmlTmp.LoadXml(requestXML);
+
+            //var tmp = xmlTmp.GetRequestType();
+
+            ////get reqtype
+            //var typeTmp = JsonConvert.DeserializeObject<RequestTypeInfo>("");
 
             var requestHelp = new PullRequestHelp
             {
-                WsName = wsName,
-                WebServiceId = webServiceId,
-                RealUrl = realUrl,
-                RequestXml = requestXML
+                //WsName = typeTmp.ServiceType.WSName,
+                //WebServiceId = typeTmp.ServiceType.WebServiceId,
+                //RealUrl = typeTmp.ServiceType.WsUrl,
+                RequestXml = requestXML//,
+                //RequestType = typeTmp
             };
 
             return requestHelp.RequestHelp();

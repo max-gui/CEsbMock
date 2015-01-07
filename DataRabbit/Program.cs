@@ -10,11 +10,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.Entity;
+using EsbRedisHelp;
+using System.Security.Cryptography;
+using HashHelp;
 
 namespace DataRabbit
 {
     class Program
     {
+        private static RedisHelp RSHelp = new RedisHelp();
         static void Main(string[] args)
         {
             //var rpcTask1 = new TaskFactory().StartNew(() =>
@@ -51,7 +55,9 @@ namespace DataRabbit
                 DeleteMethod,
                 GetByRequest,
                 AddMethod,
-                EditerMethod
+                EditerMethod,
+                RequestInfoIn,
+                RequestInfoOut
             };
 
             var workerList = new List<Task>();
@@ -61,11 +67,11 @@ namespace DataRabbit
                 {
                     taskTmp = new TaskFactory().StartNew(() =>
                     {
-                        act();
+                        act();                        
                     });
                     workerList.Add(taskTmp);
                 };
-            foreach(var worker in workMethodList)
+            foreach (var worker in workMethodList)
             {
                 actTmp(worker);
                 actTmp(worker);
@@ -74,7 +80,7 @@ namespace DataRabbit
             //GetByCommentMethod GetAllMethod DeleteMethod
             Task.WaitAll(workerList.ToArray());
         }
-                
+
         private static void Send(string channelName, Action<string> messageAct)
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
@@ -105,7 +111,7 @@ namespace DataRabbit
             }
         }
 
-        private static void Rpc(string FromChannel, Func<string,string> messageAct)
+        private static void Rpc(string FromChannel, Func<string, string> messageAct)
         {
             var factory = new ConnectionFactory() { HostName = "localhost" };
 
@@ -138,7 +144,7 @@ namespace DataRabbit
                         {
                             var message = Encoding.UTF8.GetString(body);
                             res = messageAct(message);
-                            
+
                         }
                         catch (Exception e)
                         {
@@ -164,10 +170,99 @@ namespace DataRabbit
             {
                 var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
 
-                Save(mockMessageTmp, (infoTmp) => {
+                Save(mockMessageTmp, (infoTmp) =>
+                {
                     infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
-                    infoTmp.LastModifyTime = DateTime.Now;                    
+                    infoTmp.LastModifyTime = DateTime.Now;
                 });
+            });
+        }
+
+        private static void RequestInfoIn()
+        {
+            Send("EsbRequestInfoIn", (message) =>
+            {
+                var typeTmp = JsonConvert.DeserializeObject<RequestTypeInfo>(message);
+
+                using (var db = new MockMessageEntity())
+                {
+                    var b =
+                        from info in db.ServiceTypes
+                        where info.WebServiceId.Equals(typeTmp.ServiceType.WebServiceId)
+                        select info;
+
+                    var stiTmp = b.Count() > 0 ? b.First() : null;
+                    if (null == stiTmp)
+                    {
+                        stiTmp = new ServiceTypeInfo
+                        {
+                            WebServiceId = typeTmp.ServiceType.WebServiceId,
+                            WSName = typeTmp.ServiceType.WSName,
+                            WsUrl = typeTmp.ServiceType.WsUrl
+                        };
+
+                        db.ServiceTypes.Add(stiTmp);
+                    }
+
+                    var c =
+                        from info in db.RequestTypeInfos
+                        where info.RequestType.Equals(typeTmp.RequestType)
+                        //&& info.ServiceType.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId)
+                        select info;
+
+                    var rtiTmp = c.Count() > 0 ? c.First() : null;
+                    if (null == rtiTmp)
+                    {
+                        rtiTmp = new RequestTypeInfo
+                        {
+                            RequestType = typeTmp.RequestType
+                            //ServiceType = stiTmp
+                        };
+
+                        db.RequestTypeInfos.Add(rtiTmp);
+                    }
+
+                    rtiTmp.ServiceType = stiTmp;
+
+                    db.SaveChanges();
+                    var valueTmp = JsonConvert.SerializeObject(rtiTmp);
+                    RSHelp.DB.StringSet(typeTmp.RequestType.ToLower(), valueTmp, expiry: new TimeSpan(1, 0, 0));
+                }
+
+                //Save(typeTmp, (infoTmp) =>
+                //{
+                //    infoTmp.ResponseXml = typeTmp.ResponseXml;
+                //    infoTmp.LastModifyTime = DateTime.Now;
+                //});
+            });
+        }
+
+        private static void RequestInfoOut()
+        {
+            Rpc("EsbRequestInfoOut", (message) =>
+            {
+                var typeStrTmp = message;
+                var res = string.Empty;
+
+                res = RSHelp.DB.StringGet(typeStrTmp.ToLower()).ToString();
+                if (string.IsNullOrEmpty(res))
+                {
+                    using (var db = new MockMessageEntity())
+                    {
+                        var n =
+                            from info in db.RequestTypeInfos
+                            where info.RequestType.Equals(typeStrTmp,StringComparison.OrdinalIgnoreCase)
+                            select info;
+
+                        if (n.Count() > 0)
+                        {
+                            var m = n.First();
+                            res = JsonConvert.SerializeObject(m);
+                        }
+                    }
+                }
+
+                return res;
             });
         }
 
@@ -179,7 +274,7 @@ namespace DataRabbit
 
                 Save(mockMessageTmp, (infoTmp) =>
                 {
-                    
+
                 });
             });
         }
@@ -192,7 +287,7 @@ namespace DataRabbit
 
                 Save(mockMessageTmp, (infoTmp) =>
                 {
-                    if(!string.IsNullOrEmpty(mockMessageTmp.ResponseXml))
+                    if (!string.IsNullOrEmpty(mockMessageTmp.ResponseXml))
                     {
                         infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
                     }
@@ -217,33 +312,57 @@ namespace DataRabbit
 
                 var requestTypeTmp = mockMessageTmp["type"].ToString();
                 var requestXMLTmp = mockMessageTmp["request"].ToString();
+                var requestKeyTmp = mockMessageTmp["key"].ToString();
 
-                using (var db = new MockMessageEntity())
+                var redis = RSHelp.DB;
+                //var keyTmp = reqXmlToCompare.Message2KeyWord();
+                var response = redis.HashGetAsync(requestKeyTmp, "response").Result.ToString();// .StringGet(reqXmlToCompare.GetHashCode().ToString());
+                
+                var timeTmp = redis.HashGetAsync(requestKeyTmp, "timeout").Result.ToString();
+
+                if (string.IsNullOrEmpty(res))
                 {
-                    var m =
-                        from info in db.MockMessages
-                        where
-                            info.RequestType.RequestType.Equals(requestTypeTmp) &&
-                            info.RequestXml.Equals(requestXMLTmp)
-                        select
-                            info;
-
-                    if (m.Count() > 0)
+                    using (var db = new MockMessageEntity())
                     {
-                        var messageTmp = m.First();
-                        var tmp =
-                            new
-                            {
-                                messageTmp.ResponseXml,
-                                messageTmp.Timeout
-                            }; 
+                        var m =
+                            from info in db.MockMessages
+                            where
+                                info.RequestType.RequestType.Equals(requestTypeTmp) &&
+                                info.KeyInfo.Equals(requestKeyTmp)
+                            select
+                                info;
 
-                        res = JsonConvert.SerializeObject(tmp);
+                        if (m.Count() > 0)
+                        {
+                            var messageTmp = m.First();
+                            var tmp =
+                                new
+                                {
+                                    ResponseXml = messageTmp.ResponseXml,
+                                    Timeout = messageTmp.Timeout
+                                };
 
-                        CacheToRedis(messageTmp);                
+                            res = JsonConvert.SerializeObject(tmp);
+
+                            CacheToRedis(messageTmp);
+                        }
                     }
                 }
-                
+                else
+                {
+                    var tmp =
+                                new
+                                {
+                                    ResponseXml = response,
+                                    Timeout = JsonConvert.DeserializeObject<TimeSpan>(timeTmp)
+                                };
+
+                    res = JsonConvert.SerializeObject(tmp);
+
+                    RSHelp.DB.KeyExpire(requestKeyTmp, new TimeSpan(1, 0, 0));
+                    //CacheToRedis(messageTmp);
+                }
+
                 return res;
             });
         }
@@ -258,22 +377,22 @@ namespace DataRabbit
 
                 var requestTypeTmp = mockMessageTmp["type"].ToString();
                 var requestXMLTmp = mockMessageTmp["request"].ToString();
+                var requestKeyTmp = mockMessageTmp["key"].ToString();
 
                 using (var db = new MockMessageEntity())
                 {
                     var m = db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType).
-                        Where(e => e.RequestType.RequestType.Equals(requestTypeTmp) &&
-                            e.RequestXml.Equals(requestXMLTmp));
-                        //from info in db.MockMessages
-                        //where
-                        //    info.RequestType.RequestType.Equals(requestTypeTmp) &&
-                        //    info.RequestXml.Equals(requestXMLTmp)
-                        //select
-                        //    info;
+                        Where(e => e.KeyInfo.Equals(requestKeyTmp));
+                    //from info in db.MockMessages
+                    //where
+                    //    info.RequestType.RequestType.Equals(requestTypeTmp) &&
+                    //    info.RequestXml.Equals(requestXMLTmp)
+                    //select
+                    //    info;
 
                     if (m.Count() > 0)
                     {
-                        res = JsonConvert.SerializeObject(m.First()); 
+                        res = JsonConvert.SerializeObject(m.First());
                     }
                 }
 
@@ -292,11 +411,11 @@ namespace DataRabbit
                 {
                     var m = db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType).
                         Where(e => e.Comment.Equals(commentTmp));
-                        //from info in db.MockMessages
-                        //where
-                        //    info.Comment.Equals(commentTmp)
-                        //select
-                        //    info;
+                    //from info in db.MockMessages
+                    //where
+                    //    info.Comment.Equals(commentTmp)
+                    //select
+                    //    info;
 
                     if (m.Count() > 0)
                     {
@@ -306,7 +425,7 @@ namespace DataRabbit
                 }
 
                 return res;
-            });            
+            });
         }
         private static void GetAllMethod()
         {
@@ -317,19 +436,19 @@ namespace DataRabbit
                 var resTmp = default(List<MockMessage>);
                 using (var db = new MockMessageEntity())
                 {
-                     var m =
-                         db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType);
-
+                    var m =
+                        db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType);
+                    
                     if (m.Count() > 0)
                     {
-                        Console.WriteLine(m.FirstOrDefault().RequestType.ServiceType);
+                        //Console.WriteLine(m.FirstOrDefault().RequestType.ServiceType);
                         resTmp = m.ToList();
                         res = JsonConvert.SerializeObject(resTmp);
                     }
                 }
 
                 return res;
-            }); 
+            });
         }
 
         private static void DeleteMethod()
@@ -340,14 +459,16 @@ namespace DataRabbit
 
                 var requestTypeTmp = mockMessageTmp["type"].ToString();
                 var requestXMLTmp = mockMessageTmp["request"].ToString();
+                var requestKeyTmp = mockMessageTmp["key"].ToString();
+
 
                 using (var db = new MockMessageEntity())
                 {
                     var m =
                         from info in db.MockMessages
                         where
-                            info.RequestType.RequestType.Equals(requestTypeTmp) &&
-                            info.RequestXml.Equals(requestXMLTmp)
+                            //info.RequestType.RequestType.Equals(requestTypeTmp) &&
+                            info.KeyInfo.Equals(requestKeyTmp)
                         select
                             info;
 
@@ -356,6 +477,25 @@ namespace DataRabbit
                         db.MockMessages.Remove(m.FirstOrDefault());
                         db.SaveChanges();
 
+                        //ConfigurationOptions config = new ConfigurationOptions
+                        //{
+                        //    EndPoints =
+                        //        {
+                        //            { "10.2.24.151", 6388}
+                        //        }
+                        //};
+
+                        //var redis = ConnectionMultiplexer.Connect(config).GetDatabase(10);
+                        
+                        //var cacheValue = new
+                        //{
+                        //    request = mockMessageTmp.RequestXml,
+                        //    response = mockMessageTmp.ResponseXml
+                        //};
+                        //var cacheValueStr = JsonConvert.SerializeObject(cacheValue);
+                        //redis.set
+
+                        RSHelp.DB.KeyDelete(requestKeyTmp);
                     }
                 }
             });
@@ -366,18 +506,18 @@ namespace DataRabbit
             //var commentFlag = string.IsNullOrEmpty(mockMessageTmp.Comment);
             using (var db = new MockMessageEntity())
             {
-                var m =
-                    from info in db.MockMessages
-                    where
-                        info.RequestType.RequestType.Equals(mockMessageTmp.RequestType.RequestType) &&
-                        info.RequestType.ServiceType.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId) &&
-                        info.RequestXml.Equals(mockMessageTmp.RequestXml)
-                    select
-                        info;
+                //var m =
+                //    from info in db.MockMessages
+                //    where
+                //        //info.RequestType.RequestType.Equals(mockMessageTmp.RequestType.RequestType) &&
+                //        //info.RequestType.ServiceType.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId) &&
+                //        info.KeyInfo.Equals(mockMessageTmp.KeyInfo)
+                //    select
+                //        info;
 
-                var infoTmp = m.Count() > 0 ? m.First() : null;
-                if (m.Count() == 0)
-                {
+                //var infoTmp = m.Count() > 0 ? m.First() : null;
+                //if (m.Count() == 0)
+                //{
                     var b =
                         from info in db.ServiceTypes
                         where info.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId)
@@ -399,7 +539,7 @@ namespace DataRabbit
                     var c =
                         from info in db.RequestTypeInfos
                         where info.RequestType.Equals(mockMessageTmp.RequestType.RequestType)
-                            && info.ServiceType.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId)
+                            //&& info.ServiceType.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId)
                         select info;
 
                     var rtiTmp = c.Count() > 0 ? c.First() : null;
@@ -407,41 +547,59 @@ namespace DataRabbit
                     {
                         rtiTmp = new RequestTypeInfo
                         {
-                            RequestType = mockMessageTmp.RequestType.RequestType,
-                            ServiceType = stiTmp
+                            RequestType = mockMessageTmp.RequestType.RequestType
+                            //ServiceType = stiTmp
                         };
 
                         db.RequestTypeInfos.Add(rtiTmp);
                     }
 
-                    infoTmp = new MockMessage
-                    {
-                        InTime = DateTime.Now,
-                        RequestXml = mockMessageTmp.RequestXml,
-                        ResponseXml = mockMessageTmp.ResponseXml,
-                        RequestType = rtiTmp,
-                        LastModifyTime = DateTime.MaxValue,
-                        Comment = mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
-                        Timeout = mockMessageTmp.Timeout
-                    };
+                    rtiTmp.ServiceType = stiTmp;
 
-                    db.MockMessages.Add(infoTmp);
-                    
-                }
-                else
-                {
+                    var m =
+                    from info in db.MockMessages
+                    where
+                        //info.RequestType.RequestType.Equals(mockMessageTmp.RequestType.RequestType) &&
+                        //info.RequestType.ServiceType.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId) &&
+                        info.KeyInfo.Equals(mockMessageTmp.KeyInfo)
+                    select
+                        info;
+
+                    var infoTmp = m.Count() > 0 ? m.First() : null;
+
+                    if (null == infoTmp)
+                    {
+                        infoTmp = new MockMessage
+                        {
+                            InTime = DateTime.Now,
+                            RequestXml = mockMessageTmp.RequestXml,
+                            ResponseXml = mockMessageTmp.ResponseXml,
+                            RequestType = rtiTmp,
+                            LastModifyTime = DateTime.MaxValue,
+                            Comment = string.IsNullOrEmpty(mockMessageTmp.Comment) ? mockMessageTmp.RequestType.ServiceType.WebServiceId : mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
+                            Timeout = mockMessageTmp.Timeout,
+                            KeyInfo = mockMessageTmp.KeyInfo
+                        };
+                    }
+
                     act(infoTmp);
-                    //if (!commentFlag)
-                    //{
-                    //    infoTmp.Comment = mockMessageTmp.Comment;
-                    //    infoTmp.LastModifyTime = DateTime.Now;
-                    //}
-                    //if(!string.IsNullOrEmpty(mockMessageTmp.ResponseXml))
-                    //{
-                    //    infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
-                    //    infoTmp.LastModifyTime = DateTime.Now;
-                    //}
-                }
+                    db.MockMessages.Add(infoTmp);
+
+                //}
+                //else
+                //{                    
+                //    act(infoTmp);
+                //    //if (!commentFlag)
+                //    //{
+                //    //    infoTmp.Comment = mockMessageTmp.Comment;
+                //    //    infoTmp.LastModifyTime = DateTime.Now;
+                //    //}
+                //    //if(!string.IsNullOrEmpty(mockMessageTmp.ResponseXml))
+                //    //{
+                //    //    infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
+                //    //    infoTmp.LastModifyTime = DateTime.Now;
+                //    //}
+                //}
 
                 db.SaveChanges();
 
@@ -453,15 +611,15 @@ namespace DataRabbit
         private static void CacheToRedis(MockMessage mockMessageTmp)
         {
 
-            ConfigurationOptions config = new ConfigurationOptions
-            {
-                EndPoints =
-                                {
-                                    { "10.2.24.151", 6388}
-                                }
-            };
+            //ConfigurationOptions config = new ConfigurationOptions
+            //{
+            //    EndPoints =
+            //                    {
+            //                        { "10.2.24.151", 6388}
+            //                    }
+            //};
 
-            var redis = ConnectionMultiplexer.Connect(config).GetDatabase(10);
+            //var redis = ConnectionMultiplexer.Connect(config).GetDatabase(10);
 
             //var cacheValue = new
             //{
@@ -470,12 +628,15 @@ namespace DataRabbit
             //};
             //var cacheValueStr = JsonConvert.SerializeObject(cacheValue);
             //redis.set
-            redis.HashSetAsync(mockMessageTmp.RequestXml, new HashEntry[]{
+
+            //var keyTmp = mockMessageTmp.RequestXml.Message2KeyWord();// Message2KeyWord(mockMessageTmp);
+
+            RSHelp.DB.HashSetAsync(mockMessageTmp.KeyInfo, new HashEntry[]{
                 new HashEntry("request",mockMessageTmp.RequestXml),
                 new HashEntry("response",mockMessageTmp.ResponseXml),
                 new HashEntry("timeout",JsonConvert.SerializeObject(mockMessageTmp.Timeout))});
-            redis.KeyExpireAsync(mockMessageTmp.ResponseXml, expiry: new TimeSpan(1, 0, 0));
+            RSHelp.DB.KeyExpireAsync(mockMessageTmp.KeyInfo, expiry: new TimeSpan(1, 0, 0));
             //redis.StringSetAsync(mockMessageTmp.RequestXml.GetHashCode().ToString(), cacheValueStr, expiry: new TimeSpan(1, 0, 0));
-        }
+        }        
     }
 }

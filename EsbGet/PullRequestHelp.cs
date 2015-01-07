@@ -10,22 +10,56 @@ using RabbitMQ.Client;
 using Newtonsoft.Json;
 using System.Text;
 using EsbGet.RabbitHelp;
+using HashHelp;
 
 namespace EsbGet
 {
     public class PullRequestHelp
     {
-        public string RealUrl { get; set; }
-        public string WsName { get; set; }
-        public string WebServiceId { get; set; }
+        //public string RealUrl { get; set; }
+        //public string WsName { get; set; }
+        //public string WebServiceId { get; set; }
 
         public string RequestXml { get; set; }
 
+        public string RequestXmlForCompare { get; set; }
+
         public string ResponseXml { get; set; }
+
+        public RequestTypeInfo RequestType { get; set; }
 
         public string RequestHelp()
         {
             var ret = string.Empty;
+
+            var xmlTmpIn = new XmlDocument();
+            xmlTmpIn.LoadXml(this.RequestXml);
+
+            var typeForQ = xmlTmpIn.GetRequestType();
+            RequestXmlForCompare = xmlTmpIn.FormatRequestBody();
+            //get reqtype
+
+            var rpcClient = new RPCClient();
+
+            //Console.WriteLine(" [x] Requesting fib(30)");
+            var typeMessage = rpcClient.Call(typeForQ, "EsbRequestInfoOut");
+            //Console.WriteLine(" [.] Got '{0}'", response);
+
+            rpcClient.Close();
+
+            //var message = JsonConvert.DeserializeObject<MockMessage>(typeMessage);
+
+            var typeTmp = JsonConvert.DeserializeObject<RequestTypeInfo>(typeMessage);
+
+            this.RequestType = typeTmp;
+            //var requestHelp = new PullRequestHelp
+            //{
+            //    WsName = typeTmp.ServiceType.WSName,
+            //    WebServiceId = typeTmp.ServiceType.WebServiceId,
+            //    RealUrl = typeTmp.ServiceType.WsUrl,
+            //    RequestXml = requestXML,
+            //    RequestType = typeTmp
+            //};
             
             using (var client = new HttpClient())
             {
@@ -59,7 +93,7 @@ namespace EsbGet
                 //var gizmo = new Product() { Name = "Gizmo", Price = 100, Category = "Widget" };
                 var contentTmp = new StringContent(content, System.Text.Encoding.UTF8, "text/xml");
                 //contentTmp.Headers.Add("Content-Type", "text/xml");
-                var response = client.PostAsync(this.RealUrl, contentTmp).Result;
+                var response = client.PostAsync(this.RequestType.ServiceType.WsUrl, contentTmp).Result;
 
                 //Database.SetInitializer(new DropCreateDatabaseIfModelChanges<MockEntity>());
 
@@ -76,7 +110,10 @@ namespace EsbGet
                     //var responseXmlToSave = xmlTmp.InnerXml;
                     this.ResponseXml = ret;
 
-                    UpdateOrAddMockMessage();
+                    if (EsbFlag.GetFlag.Equals(GlobalFlag.GetBack))
+                    {
+                        UpdateOrAddMockMessage();
+                    }
                 }
             }
             //get uuid from query
@@ -91,24 +128,26 @@ namespace EsbGet
 
         public void UpdateOrAddMockMessage(string comment = default(string))
         {
-            var xmlTmp = new XmlDocument();
-            xmlTmp.LoadXml(this.RequestXml);
+            //var xmlTmp = new XmlDocument();
+            //xmlTmp.LoadXml(this.RequestXml);
 
                 var infoTmp = new MockMessage
                 {
                     InTime = DateTime.Now,
-                    RequestXml = xmlTmp.FormatRequestBody(),
+                    RequestXml = this.RequestXmlForCompare,// xmlTmp.FormatRequestBody(),
+                    KeyInfo = this.RequestXmlForCompare.Message2KeyWord(),
                     ResponseXml = this.ResponseXml,
-                    RequestType = new RequestTypeInfo
-                    {
-                        RequestType = xmlTmp.GetRequestType(),
-                        ServiceType = new ServiceTypeInfo
-                        {
-                            WebServiceId = this.WebServiceId,
-                            WSName = this.WsName,
-                            WsUrl = this.RealUrl
-                        }
-                    },
+                    RequestType = this.RequestType,
+                    //new RequestTypeInfo
+                    //{
+                    //    RequestType = xmlTmp.GetRequestType(),
+                    //    ServiceType = new ServiceTypeInfo
+                    //    {
+                    //        WebServiceId = this.WebServiceId,
+                    //        WSName = this.WsName,
+                    //        WsUrl = this.RealUrl
+                    //    }
+                    //},
                     LastModifyTime = DateTime.MaxValue,
                     Comment = comment
                 };
