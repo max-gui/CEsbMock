@@ -29,14 +29,15 @@ namespace MockEntity
 
     public class RequestTypeInfo
     {
-        public int Id { get; set; }
+        [Key]
         public string RequestType { get; set; }
         public ServiceTypeInfo ServiceType { get; set; }
     }
 
     public class MockMessage
     {
-        public int Id { get; set; }
+        //public int Id { get; set; }
+        [Key]
         public string KeyInfo { get; set; }
         public RequestTypeInfo RequestType { get; set; }
         public string RequestXml { get; set; }

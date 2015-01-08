@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace EsbRedisHelp
 {
-    public class RedisHelp
+    public static class RedisHelp
     {
-        public IDatabase DB = null;
+        public static IDatabase DB = null;
 
-        public RedisHelp()
+        static RedisHelp()
         {
             ConfigurationOptions config = new ConfigurationOptions
             {

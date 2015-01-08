@@ -69,7 +69,7 @@ namespace EsbGet
             var timeTmp = message["Timeout"].ToString();
 
             #region tmp
-            var m = new EsbRedisHelp.RedisHelp().DB.HashGetAsync("timeoutTmp", requestType.ToLower()).Result.ToString();
+            var m = RedisHelp.DB.HashGetAsync("timeoutTmp", requestType.ToLower()).Result.ToString();
             //var m = new EsbRedisHelp.RedisHelp().DB.StringGet(requestType.ToLower() + ".t").ToString();
             timeTmp = string.IsNullOrEmpty(m) ? timeTmp : m;
             #endregion

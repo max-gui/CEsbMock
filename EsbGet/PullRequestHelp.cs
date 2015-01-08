@@ -12,6 +12,7 @@ using System.Text;
 using EsbGet.RabbitHelp;
 using HashHelp;
 using System.Threading;
+using EsbRedisHelp;
 
 namespace EsbGet
 {
@@ -40,7 +41,7 @@ namespace EsbGet
             RequestXmlForCompare = xmlTmpIn.FormatRequestBody();
 
             #region tmp
-            var m = new EsbRedisHelp.RedisHelp().DB.HashGetAsync("timeoutTmp", typeForQ.ToLower()).Result.ToString();
+            var m = RedisHelp.DB.HashGetAsync("timeoutTmp", typeForQ.ToLower()).Result.ToString();
             //var m = new EsbRedisHelp.RedisHelp().DB.StringGet(typeForQ.ToLower() + ".t").ToString();
             var timeTmp = string.IsNullOrEmpty(m) ? "00:00:00" : m;
             
