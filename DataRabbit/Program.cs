@@ -13,6 +13,7 @@ using System.Data.Entity;
 using EsbRedisHelp;
 using System.Security.Cryptography;
 using HashHelp;
+using EsbRabbitHelp;
 
 namespace DataRabbit
 {
@@ -45,11 +46,11 @@ namespace DataRabbit
             //{
             //    rpcTask1,rpcTask2,queWorkerTask1,queWorkerTask2
             //};
-
+            //Console.WriteLine(EsbRabbitHelp.PipeName.EsbEditData.ToString());
             var workMethodList = new List<Action>()
             {
-                WorkerMethod,
-                RpcMethod,
+                UpdateOrAddMockData,
+                GetMockData,
                 GetByCommentMethod,
                 GetAllMethod,
                 DeleteMethod,
@@ -164,9 +165,9 @@ namespace DataRabbit
             }
         }
 
-        private static void WorkerMethod()
+        private static void UpdateOrAddMockData()
         {
-            Send("EsbMockData", (message) =>
+            Send(PipeName.EsbUpdateOrAddMockData.ToString(), (message) =>
             {
                 var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
 
@@ -180,7 +181,7 @@ namespace DataRabbit
 
         private static void RequestInfoIn()
         {
-            Send("EsbRequestInfoIn", (message) =>
+            Send(PipeName.EsbRequestInfoIn.ToString(), (message) =>
             {
                 var typeTmp = JsonConvert.DeserializeObject<RequestTypeInfo>(message);
 
@@ -239,7 +240,7 @@ namespace DataRabbit
 
         private static void RequestInfoOut()
         {
-            Rpc("EsbRequestInfoOut", (message) =>
+            Rpc(PipeName.EsbRequestInfoOut.ToString(), (message) =>
             {
                 var typeStrTmp = message;
                 var res = string.Empty;
@@ -268,7 +269,7 @@ namespace DataRabbit
 
         private static void AddMethod()
         {
-            Send("EsbNewData", (message) =>
+            Send(PipeName.EsbNewData.ToString(), (message) =>
             {
                 var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
 
@@ -281,7 +282,7 @@ namespace DataRabbit
 
         private static void EditerMethod()
         {
-            Send("EsbEditData", (message) =>
+            Send(PipeName.EsbEditData.ToString(), (message) =>
             {
                 var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
 
@@ -302,9 +303,9 @@ namespace DataRabbit
             });
         }
 
-        private static void RpcMethod()
+        private static void GetMockData()
         {
-            Rpc("rpc_rabbitData", (message) =>
+            Rpc(PipeName.EsbGetMockData.ToString(), (message) =>
             {
                 string res = string.Empty;
 
@@ -369,7 +370,7 @@ namespace DataRabbit
 
         private static void GetByRequest()
         {
-            Rpc("rpc_getByRequest", (message) =>
+            Rpc(PipeName.rpc_getByRequest.ToString(), (message) =>
             {
                 string res = string.Empty;
 
@@ -402,7 +403,7 @@ namespace DataRabbit
 
         private static void GetByCommentMethod()
         {
-            Rpc("rpc_getByComment", (commentTmp) =>
+            Rpc(PipeName.rpc_getByComment.ToString(), (commentTmp) =>
             {
                 string res = string.Empty;
 
@@ -429,7 +430,7 @@ namespace DataRabbit
         }
         private static void GetAllMethod()
         {
-            Rpc("rpc_get_all", (commentTmp) =>
+            Rpc(PipeName.rpc_get_all.ToString(), (commentTmp) =>
             {
                 string res = string.Empty;
 
@@ -453,7 +454,7 @@ namespace DataRabbit
 
         private static void DeleteMethod()
         {
-            Send("rpc_delete", (message) =>
+            Send(PipeName.rpc_delete.ToString(), (message) =>
             {
                 var mockMessageTmp = JObject.Parse(message);// JsonConvert.DeserializeObject<MockMessage>(message);
 
