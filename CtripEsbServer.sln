@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Performance1.psess = Performance1.psess
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EsbRabbitHelp", "EsbRabbitHelp\EsbRabbitHelp.csproj", "{367E06BA-60B2-4870-A941-74DE0C5DBE75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{E83E50F9-A4A9-41A7-868F-F536EA2F56E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E83E50F9-A4A9-41A7-868F-F536EA2F56E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E83E50F9-A4A9-41A7-868F-F536EA2F56E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{367E06BA-60B2-4870-A941-74DE0C5DBE75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{367E06BA-60B2-4870-A941-74DE0C5DBE75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{367E06BA-60B2-4870-A941-74DE0C5DBE75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{367E06BA-60B2-4870-A941-74DE0C5DBE75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

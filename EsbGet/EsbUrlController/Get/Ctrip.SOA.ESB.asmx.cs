@@ -1,4 +1,5 @@
 ﻿using EsbGet.RabbitHelp;
+using EsbRabbitHelp;
 using MockEntity;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -31,7 +32,7 @@ namespace EsbGet.EsbUrlController.Get
                 RequestXML = requestXML
             };
 
-            return requestHelp.Request("rpc_rabbitData"); //requestXML.RequestHelp();// RequestHelp(requestXML);
+            return requestHelp.Request(PipeName.EsbGetMockData.ToString()); //requestXML.RequestHelp();// RequestHelp(requestXML);
         }
     }
 }

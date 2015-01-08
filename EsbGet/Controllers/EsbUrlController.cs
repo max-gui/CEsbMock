@@ -1,4 +1,5 @@
 ﻿using EsbGet.RabbitHelp;
+using EsbRabbitHelp;
 using EsbRedisHelp;
 using MockEntity;
 using Newtonsoft.Json;
@@ -77,7 +78,7 @@ namespace EsbGet.Controllers
 
                     var messageClient = new MessageClient();
 
-                    messageClient.Send(callmessage, "EsbRequestInfoIn");
+                    messageClient.Send(callmessage, PipeName.EsbRequestInfoIn.ToString());
 
                     //string json = JsonConvert.SerializeObject(tagValue);
 

@@ -10,6 +10,7 @@ using EsbGet.EsbUrlController;
 using Newtonsoft.Json;
 using EsbGet.RabbitHelp;
 using HashHelp;
+using EsbRabbitHelp;
 
 namespace EsbGet.Controllers
 {
@@ -47,7 +48,7 @@ namespace EsbGet.Controllers
             var callMessage = JsonConvert.SerializeObject(queryTmp);
 
             //Console.WriteLine(" [x] Requesting fib(30)");
-            res = rpcClient.Call(callMessage, "rpc_getByRequest");
+            res = rpcClient.Call(callMessage, PipeName.rpc_getByRequest.ToString());
             //Console.WriteLine(" [.] Got '{0}'", response);
 
             rpcClient.Close();
@@ -63,7 +64,7 @@ namespace EsbGet.Controllers
         {
             var rpcClient = new RPCClient();
 
-            var res = rpcClient.Call(comment, "rpc_getByComment");
+            var res = rpcClient.Call(comment, PipeName.rpc_getByComment.ToString());
             
             rpcClient.Close();
 
@@ -82,7 +83,7 @@ namespace EsbGet.Controllers
         {
             var rpcClient = new RPCClient();
 
-            var res = rpcClient.Call("give_me_more", "rpc_get_all");
+            var res = rpcClient.Call("give_me_more", PipeName.rpc_get_all.ToString());
 
             rpcClient.Close();
 
@@ -114,7 +115,7 @@ namespace EsbGet.Controllers
 
             var messageClient = new MessageClient();
 
-            messageClient.Send(callmessage, "EsbNewData");
+            messageClient.Send(callmessage, PipeName.EsbNewData.ToString());
 
             //var rpcClient = new RPCClient();
 
@@ -154,7 +155,7 @@ namespace EsbGet.Controllers
 
             var messageClient = new MessageClient();
 
-            messageClient.Send(callmessage, "EsbEditData");
+            messageClient.Send(callmessage, PipeName.EsbEditData.ToString());
 
 
             //var rpcClient = new RPCClient();
@@ -288,7 +289,7 @@ namespace EsbGet.Controllers
             var messageClient = new MessageClient();// messageClient();
             //var rpcClient = new RPCClient();
 
-            messageClient.Send(callmessage, "rpc_delete");
+            messageClient.Send(callmessage, PipeName.rpc_delete.ToString());
         }
     }
 }

@@ -13,6 +13,7 @@ using EsbGet.RabbitHelp;
 using HashHelp;
 using System.Threading;
 using EsbRedisHelp;
+using EsbRabbitHelp;
 
 namespace EsbGet
 {
@@ -57,7 +58,7 @@ namespace EsbGet
             var rpcClient = new RPCClient();
 
             //Console.WriteLine(" [x] Requesting fib(30)");
-            var typeMessage = rpcClient.Call(typeForQ, "EsbRequestInfoOut");
+            var typeMessage = rpcClient.Call(typeForQ, PipeName.EsbRequestInfoOut.ToString());
             //Console.WriteLine(" [.] Got '{0}'", response);
 
             rpcClient.Close();
@@ -170,7 +171,7 @@ namespace EsbGet
             string message = JsonConvert.SerializeObject(infoTmp);
 
             var client = new MessageClient();
-            client.Send(message, "EsbMockData");
+            client.Send(message, PipeName.EsbUpdateOrAddMockData.ToString());
         }
     }
 }
