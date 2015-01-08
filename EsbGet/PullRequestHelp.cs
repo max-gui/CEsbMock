@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using System.Text;
 using EsbGet.RabbitHelp;
 using HashHelp;
+using System.Threading;
 
 namespace EsbGet
 {
@@ -37,6 +38,19 @@ namespace EsbGet
 
             var typeForQ = xmlTmpIn.GetRequestType();
             RequestXmlForCompare = xmlTmpIn.FormatRequestBody();
+
+            #region tmp
+            var m = new EsbRedisHelp.RedisHelp().DB.HashGetAsync("timeoutTmp", typeForQ.ToLower()).Result.ToString();
+            //var m = new EsbRedisHelp.RedisHelp().DB.StringGet(typeForQ.ToLower() + ".t").ToString();
+            var timeTmp = string.IsNullOrEmpty(m) ? "00:00:00" : m;
+            
+            var timeout = TimeSpan.Parse(timeTmp);
+            if (!timeout.Equals(default(TimeSpan)))
+            {
+                Thread.Sleep(timeout);
+                return ret;
+            }
+            #endregion
             //get reqtype
 
             var rpcClient = new RPCClient();
