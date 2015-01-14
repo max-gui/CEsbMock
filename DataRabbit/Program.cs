@@ -90,8 +90,7 @@ namespace DataRabbit
                     var consumer = new QueueingBasicConsumer(channel);
                     channel.BasicConsume(channelName, true, consumer);
 
-                    Console.WriteLine(" [*] Waiting for messages." +
-                                             "To exit press CTRL+C");
+                    Console.WriteLine(string.Format(" [*] {0} Waiting for messages.",channelName));
                     while (true)
                     {
                         Thread.SpinWait(1000);
@@ -140,7 +139,7 @@ namespace DataRabbit
                     channel.BasicQos(0, 1, false);
                     var consumer = new QueueingBasicConsumer(channel);
                     channel.BasicConsume(FromChannel, false, consumer);
-                    Console.WriteLine(" [x] Awaiting RPC requests");
+                    Console.WriteLine(string.Format(" [x] {0} Awaiting RPC requests",FromChannel));
 
 
                     while (true)
