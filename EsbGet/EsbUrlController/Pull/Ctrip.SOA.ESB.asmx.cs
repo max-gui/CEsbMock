@@ -30,22 +30,12 @@ namespace EsbGet.EsbUrlController.Pull
         [Route("EsbUrlController/Pull/Ctrip.SOA.ESB.asmx")]
         public string Request(string requestXML)
         {
-           //var redis = RSHelp.DB;
-
-            //var realUrl = "http://soa.fws.qa.nt.ctripcorp.com/SOA.ESB/Ctrip.SOA.ESB.asmx";
-            //var wsName = "Ctrip.SOA.ESB.asmx";
-            //var webServiceId = wsName;
-            //var ret = string.Empty;
-
             var requestHelp = new PullRequestHelp
             {
-                //WsName = wsName,
-                //WebServiceId = webServiceId,
-                //RealUrl = realUrl,
                 RequestXml = requestXML
             };
 
-            return requestHelp.RequestHelp();// PullRequestHelp(requestXML, realUrl, wsName, webServiceId, ref ret);
+            return requestHelp.RequestHelp();
         }
     }
 }

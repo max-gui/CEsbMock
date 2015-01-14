@@ -47,13 +47,20 @@ namespace MockEntity
         public string Comment { get; set; }
         public TimeSpan Timeout { get; set; }
     }
+                            
+    public class PutMessage
+    {
+        public string KeyInfo { get; set; } 
+        public string ResponseXml { get; set; }
+        public string Comment { get; set; }
+        public string TimeOut { get; set; }
+    }
 
-    public class SampleMessage
+    public class PostMessage
     {
         public string RequestXml { get; set; }
         public string ResponseXml { get; set; }
         public string Comment { get; set; }
-        public string WebServiceId { get; set; }
         public string TimeOut { get; set; }
     }
 

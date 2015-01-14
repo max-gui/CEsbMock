@@ -15,6 +15,7 @@ namespace EsbRabbitHelp
         EsbEditData,
         EsbGetMockData,
         rpc_getByRequest,
+        rpc_getByKey,
         rpc_getByComment,
         rpc_get_all,
         rpc_delete

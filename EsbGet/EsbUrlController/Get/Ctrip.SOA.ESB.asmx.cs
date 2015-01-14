@@ -32,7 +32,7 @@ namespace EsbGet.EsbUrlController.Get
                 RequestXML = requestXML
             };
 
-            return requestHelp.Request(PipeName.EsbGetMockData.ToString()); //requestXML.RequestHelp();// RequestHelp(requestXML);
+            return requestHelp.Request(PipeName.EsbGetMockData.ToString());
         }
     }
 }

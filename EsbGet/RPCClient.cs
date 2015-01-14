@@ -19,11 +19,9 @@ namespace EsbGet.RabbitHelp
                 {
                     channel.QueueDeclare(channelName, false, false, false, null);
 
-                    //string message = JsonConvert.SerializeObject(infoTmp);// "Hello World!";
                     var body = Encoding.UTF8.GetBytes(message);
 
                     channel.BasicPublish("", channelName, null, body);
-                    //Console.WriteLine(" [x] Sent {0}", message);
                 }
             }
         }

@@ -11,52 +11,48 @@ using Newtonsoft.Json;
 using EsbGet.RabbitHelp;
 using HashHelp;
 using EsbRabbitHelp;
+using Newtonsoft.Json.Linq;
 
 namespace EsbGet.Controllers
 {
     public class DataEditController : ApiController
     {
-        [Route("api/GetByRequest")]
+        [Route("api/request2Key")]
         [HttpPost]
-        public MockMessage GetByRequest([FromBody]string request)
+        public string Request2Key([FromBody]string request)
         {
             XmlDocument reqXml = new XmlDocument();
             reqXml.LoadXml(request);
 
-            //var res = requestHelp.Request("rpc_getByRequest");
-
-            var requestType = reqXml.GetRequestType();// GetRequestType(reqXml);
+            var requestType = reqXml.GetRequestType();
 
             var reqXmlToCompare = reqXml.FormatRequestBody();
 
+            var key = reqXmlToCompare.Message2KeyWord();
+
+            return key;
+        }
+
+        public MockMessage GetByKey(string key)
+        {
             var res = string.Empty;
-
-            //var redis = RSHelp.DB;
-            //res = redis.HashGetAsync(reqXmlToCompare, "response").Result.ToString();// .StringGet(reqXmlToCompare.GetHashCode().ToString());
-            //res = string.Empty;
-
-            
-            var queryTmp = new
-            {
-                type = requestType,
-                request = reqXmlToCompare,
-                key = reqXmlToCompare.Message2KeyWord()
-            };
 
             var rpcClient = new RPCClient();
 
-            var callMessage = JsonConvert.SerializeObject(queryTmp);
-
-            //Console.WriteLine(" [x] Requesting fib(30)");
-            res = rpcClient.Call(callMessage, PipeName.rpc_getByRequest.ToString());
-            //Console.WriteLine(" [.] Got '{0}'", response);
+            //var callMessage = JsonConvert.SerializeObject(key);
+            var callMessage = key;
+            res = rpcClient.Call(callMessage, PipeName.rpc_getByKey.ToString());
 
             rpcClient.Close();
 
-            var message = JsonConvert.DeserializeObject<MockMessage>(res);
-
-            message.RequestXml = message.RequestXml.Replace('"','\'');
-            message.ResponseXml = message.ResponseXml.Replace('"', '\'');
+            var message = default(MockMessage);
+            if (!string.IsNullOrEmpty(res))
+            {
+                message = JsonConvert.DeserializeObject<MockMessage>(res);
+                message.RequestXml = message.RequestXml.Replace('"', '\'');
+                message.ResponseXml = message.ResponseXml.Replace('"', '\'');
+            }
+            //return Request.CreateResponse<MockMessage>(HttpStatusCode.OK, message);
             return message;
         }
 
@@ -65,12 +61,12 @@ namespace EsbGet.Controllers
             var rpcClient = new RPCClient();
 
             var res = rpcClient.Call(comment, PipeName.rpc_getByComment.ToString());
-            
+
             rpcClient.Close();
 
             var messageLst = JsonConvert.DeserializeObject<List<MockMessage>>(res);
 
-            foreach(var message in messageLst)
+            foreach (var message in messageLst)
             {
                 message.RequestXml = message.RequestXml.Replace('"', '\'');
                 message.ResponseXml = message.ResponseXml.Replace('"', '\'');
@@ -87,6 +83,10 @@ namespace EsbGet.Controllers
 
             rpcClient.Close();
 
+            if(string.IsNullOrEmpty(res))
+            {
+                return null;
+            }
             var messageLst = JsonConvert.DeserializeObject<List<MockMessage>>(res);
 
             foreach (var message in messageLst)
@@ -99,197 +99,115 @@ namespace EsbGet.Controllers
         }
 
         [HttpPost]
-        public void Post(MockMessage Data)
+        public string Post(PostMessage Data)
         {
-            //var requestHelp = new PullRequestHelp
-            //{
-            //    WsName = Data.RequestType.ServiceType.WSName,
-            //    WebServiceId = Data.RequestType.ServiceType.WebServiceId,
-            //    RealUrl = realUrl,
-            //    RequestXml = requestXML
-            //};
+            XmlDocument reqXml = new XmlDocument();
+            reqXml.LoadXml(Data.RequestXml);
 
-            //requestHelp.UpdateOrAddMockMessage(.RequestHelp();
-            Data.KeyInfo = Data.RequestXml.Message2KeyWord();
-            var callmessage = JsonConvert.SerializeObject(Data);
+            var requestType = reqXml.GetRequestType().ToLower();
 
-            var messageClient = new MessageClient();
+            var reqXmlToCompare = reqXml.FormatRequestBody();
 
-            messageClient.Send(callmessage, PipeName.EsbNewData.ToString());
+            var key = reqXmlToCompare.Message2KeyWord();
 
-            //var rpcClient = new RPCClient();
+            var help = new EsbUrlController();
 
-            //var res = rpcClient.Call(callmessage, "EsbMockData");
+            help.Request = new System.Net.Http.HttpRequestMessage(new System.Net.Http.HttpMethod("Get"),
+                string.Format(
+                "http://soa.fws.qa.nt.ctripcorp.com/SOA.ESB/lookup.ashx?UserID=410471&RequestType={0}&Environment=fws&timestamp=&AppID=410471", 
+                requestType));
 
-            //rpcClient.Close();
+            var ret = help.Auto();
 
-            ////var message = JsonConvert.DeserializeObject<bool>(res);
+            var jsonTmp = JsonConvert.SerializeObject(ret);
+            var joTmp = JObject.Parse(jsonTmp);
+
+            var wsName = joTmp["WSName"].ToString();
+            var webServiceId = joTmp["WebServiceID"].ToString();
+            var wsUrl = joTmp["WSUrl"].ToString();
+
+            var timeout = string.IsNullOrEmpty(Data.TimeOut) ? TimeSpan.MinValue : JsonConvert.DeserializeObject<TimeSpan>("'" + Data.TimeOut + "'");
+            
+            var mockMessage = new MockMessage
+            {
+                Comment = Data.Comment,
+                KeyInfo = key,
+                RequestType = new RequestTypeInfo { 
+                    RequestType = requestType,
+                    ServiceType = new ServiceTypeInfo
+                    {
+                        WebServiceId = webServiceId,
+                        WSName = wsName,
+                        WsUrl = wsUrl
+                    }
+                },
+                RequestXml = reqXmlToCompare,
+                ResponseXml = Data.ResponseXml,
+                Timeout = timeout
+            };
+
+            var callmessage = JsonConvert.SerializeObject(mockMessage);
+
+            var rpc = new RPCClient();
+            var res = rpc.Call(callmessage, PipeName.EsbNewData.ToString());
+
+            return res;
+            //var messageClient = new MessageClient();
+
+            //messageClient.Send(callmessage, PipeName.EsbNewData.ToString());
         }
 
 
-        public void Put(SampleMessage data)
+        public string Put(PutMessage data)
         {
-            XmlDocument reqXml = new XmlDocument();
-            reqXml.LoadXml(data.RequestXml);
-
-            var requestForComp = reqXml.FormatRequestBody();
             var timeout = string.IsNullOrEmpty(data.TimeOut) ? TimeSpan.MinValue : JsonConvert.DeserializeObject<TimeSpan>("'" + data.TimeOut + "'");
             var infoTmp = new MockMessage
             {
-                RequestXml = requestForComp,
-                KeyInfo = requestForComp.Message2KeyWord(),
+                KeyInfo = data.KeyInfo,
                 ResponseXml = data.ResponseXml,
-                RequestType = new RequestTypeInfo
-                {
-                    RequestType = reqXml.GetRequestType(),
-                    ServiceType = new ServiceTypeInfo
-                    {
-                        WebServiceId = data.WebServiceId
-                    }
-                },
                 Comment = data.Comment,
                 Timeout = timeout
             };
 
             var callmessage = JsonConvert.SerializeObject(infoTmp);
 
-            var messageClient = new MessageClient();
+            var rpc = new RPCClient();
+            var key = rpc.Call(callmessage, PipeName.EsbEditData.ToString());
 
-            messageClient.Send(callmessage, PipeName.EsbEditData.ToString());
+            return key;
+            //var messageClient = new MessageClient();
 
-
-            //var rpcClient = new RPCClient();
-
-            //var res = rpcClient.Call(callmessage, "EsbMockData");
-
-            //rpcClient.Close();
+            //messageClient.Send(callmessage, PipeName.EsbEditData.ToString());
         }
 
-        //public void Put(PutMessageWithRes data)
-        //{
-        //    XmlDocument reqXml = new XmlDocument();
-        //    reqXml.LoadXml(data.RequestXml);
-
-        //   var infoTmp = new MockMessage
-        //    {
-        //        RequestXml = reqXml.FormatRequestBody(),
-        //        ResponseXml = data.ResponseXml,
-        //        RequestType = new RequestTypeInfo
-        //        {
-        //            RequestType = reqXml.GetRequestType(),
-        //            ServiceType = new ServiceTypeInfo
-        //            {
-        //                WebServiceId = data.WebServiceId
-        //            }
-        //        }
-        //    };
-
-        //   var callmessage = JsonConvert.SerializeObject(infoTmp);
-
-        //   var messageClient = new MessageClient();
-
-        //   messageClient.Send(callmessage, "EsbMockData");
-
-            
-        //    //var rpcClient = new RPCClient();
-
-        //    //var res = rpcClient.Call(callmessage, "EsbMockData");
-
-        //    //rpcClient.Close();
-        //}
-
-        //[Route("api/PutWithComment")]
-        //[HttpPost]
-        //public void Put(PutMessageWithComment data)
-        //{
-        //    XmlDocument reqXml = new XmlDocument();
-        //    reqXml.LoadXml(data.RequestXml);
-
-        //    var infoTmp = new MockMessage
-        //    {
-        //        RequestXml = reqXml.FormatRequestBody(),
-        //        RequestType = new RequestTypeInfo
-        //        {
-        //            RequestType = reqXml.GetRequestType(),
-        //            ServiceType = new ServiceTypeInfo
-        //            {
-        //                WebServiceId = data.WebServiceId
-        //            }
-        //        },
-        //        Comment = data.Comment
-        //    };
-
-        //    var callmessage = JsonConvert.SerializeObject(infoTmp);
-
-        //    var messageClient = new MessageClient();
-
-        //    messageClient.Send(callmessage, "EsbMockData");
-
-
-        //    //var rpcClient = new RPCClient();
-
-        //    //var res = rpcClient.Call(callmessage, "EsbMockData");
-
-        //    //rpcClient.Close();
-        //}
-
-        //[Route("api/PutWithTimeOut")]
-        //[HttpPost]
-        //public void Put(MessageWithTimeOut data)
-        //{
-        //    XmlDocument reqXml = new XmlDocument();
-        //    reqXml.LoadXml(data.RequestXml);
-
-        //    var infoTmp = new MockMessage
-        //    {
-        //        RequestXml = reqXml.FormatRequestBody(),
-        //        RequestType = new RequestTypeInfo
-        //        {
-        //            RequestType = reqXml.GetRequestType(),
-        //            ServiceType = new ServiceTypeInfo
-        //            {
-        //                WebServiceId = data.WebServiceId
-        //            }
-        //        },
-        //        Timeout = data.Timeout
-        //    };
-
-        //    var callmessage = JsonConvert.SerializeObject(infoTmp);
-
-        //    var messageClient = new MessageClient();
-
-        //    messageClient.Send(callmessage, "EsbMockData");
-
-
-        //    //var rpcClient = new RPCClient();
-
-        //    //var res = rpcClient.Call(callmessage, "EsbMockData");
-
-        //    //rpcClient.Close();
-        //}
-
-        public void Delete([FromBody]string request)
+        public bool Delete(string reqKey)
         {
-            XmlDocument reqXml = new XmlDocument();
-            reqXml.LoadXml(request);
+            //XmlDocument reqXml = new XmlDocument();
+            //reqXml.LoadXml(request);
 
-            var requestType = reqXml.GetRequestType();// GetRequestType(reqXml);
+            //var requestType = reqXml.GetRequestType();
 
-            var reqXmlToCompare = reqXml.FormatRequestBody();
+            //var reqXmlToCompare = reqXml.FormatRequestBody();
 
-            var queryTmp = new
-            {
-                type = requestType,
-                request = reqXmlToCompare,
-                key = reqXmlToCompare.Message2KeyWord()
-            };
+            //var queryTmp = new
+            //{
+            //    type = requestType,
+            //    request = reqXmlToCompare,
+            //    key = reqXmlToCompare.Message2KeyWord()
+            //};
 
-            var callmessage = JsonConvert.SerializeObject(queryTmp);
+            //var callmessage = JsonConvert.SerializeObject(queryTmp);
 
-            var messageClient = new MessageClient();// messageClient();
-            //var rpcClient = new RPCClient();
+            var rpc = new RPCClient();
+            var res = rpc.Call(reqKey, PipeName.rpc_delete.ToString());
 
-            messageClient.Send(callmessage, PipeName.rpc_delete.ToString());
+            var flag = false;
+            flag = JsonConvert.DeserializeObject<bool>(res);
+
+            return flag;
+            //var messageClient = new MessageClient();
+
+            //messageClient.Send(callmessage, PipeName.rpc_delete.ToString());
         }
     }
 }
