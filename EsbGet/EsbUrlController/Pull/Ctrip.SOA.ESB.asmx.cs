@@ -1,4 +1,5 @@
-﻿using MockEntity;
+﻿using ControllerLib;
+using MockEntity;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using StackExchange.Redis;
@@ -27,7 +28,6 @@ namespace EsbGet.EsbUrlController.Pull
         //private static RedisHelp RSHelp = new RedisHelp();
 
         [WebMethod]
-        [Route("EsbUrlController/Pull/Ctrip.SOA.ESB.asmx")]
         public string Request(string requestXML)
         {
             var requestHelp = new PullRequestHelp

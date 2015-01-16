@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Web;
 using System.Xml;
-using EsbGet.EsbUrlController;
 using MockEntity;
 using RabbitMQ.Client;
 using Newtonsoft.Json;
 using System.Text;
-using EsbGet.RabbitHelp;
 using HashHelp;
 using System.Threading;
 using EsbRedisHelp;
 using EsbRabbitHelp;
+using ControllerLib;
+using System.Net.Http;
 
-namespace EsbGet
+namespace ControllerLib
 {
     public class PullRequestHelp
     {
@@ -59,7 +58,7 @@ namespace EsbGet
             var typeTmp = JsonConvert.DeserializeObject<RequestTypeInfo>(typeMessage);
 
             this.RequestType = typeTmp;
-
+            
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Clear();

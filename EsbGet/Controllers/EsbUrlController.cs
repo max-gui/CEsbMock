@@ -1,4 +1,4 @@
-﻿using EsbGet.RabbitHelp;
+﻿using ControllerLib;
 using EsbRabbitHelp;
 using EsbRedisHelp;
 using MockEntity;
@@ -48,7 +48,7 @@ namespace EsbGet.Controllers
                     var realUrl = a["WSUrl"].ToString();
                     var wsName = a["WSName"].ToString();
                     var webServiceId = a["WebServiceID"].ToString();
-                    a["WSUrl"] = string.Format("http://10.2.8.70:8059/EsbGet/EsbUrlController/{0}/{0}Help.asmx", urlPara);
+                    a["WSUrl"] = string.Format("http://10.2.8.70:8059/EsbGet/EsbUrlController/{0}/Ctrip.SOA.ESB.asmx", urlPara); //string.Format("http://10.2.8.70:8059/EsbGet/EsbUrlController/{0}/{0}Help.asmx", urlPara);
 
                     var reqTmp = new RequestTypeInfo
                     {
@@ -133,7 +133,7 @@ namespace EsbGet.Controllers
 
                 WSName = "Payment.Base.MerchantService",
 
-                WSUrl = "http://10.2.8.70:8059/EsbGet/EsbUrlController/Get/GetHelp.asmx",//"http://localhost/CtripEsbAsmx/WebService1.asmx",//"http://10.2.8.70:8059/Asmx/webservice1.asmx",
+                WSUrl = "http://10.2.8.70:8059/EsbGet/EsbUrlController/Get/Ctrip.SOA.ESB.asmx",//"http://10.2.8.70:8059/EsbGet/EsbUrlController/Get/GetHelp.asmx",//"http://localhost/CtripEsbAsmx/WebService1.asmx",//"http://10.2.8.70:8059/Asmx/webservice1.asmx",
 
                 WebServiceID = 410419
 

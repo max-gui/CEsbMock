@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ControllerLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -11,14 +12,16 @@ namespace EsbGet.Controllers
     {
         public string Put(bool flag)
         {
-            EsbFlag.GetFlag = flag ? GlobalFlag.GetBack : GlobalFlag.GetThrough;
+            return new FlagEdit().Put(flag);
+            //EsbFlag.GetFlag = flag ? GlobalFlag.GetBack : GlobalFlag.GetThrough;
 
-            return EsbFlag.GetFlag.ToString();
+            //return EsbFlag.GetFlag.ToString();
         }
 
         public string Get()
         {
-            return EsbFlag.GetFlag.ToString();
+            return new FlagEdit().Get();//.Put(flag);
+            //return EsbFlag.GetFlag.ToString();
         }
     }
 }

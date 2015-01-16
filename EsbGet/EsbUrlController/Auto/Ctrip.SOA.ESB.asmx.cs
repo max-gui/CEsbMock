@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ControllerLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -16,16 +17,19 @@ namespace EsbGet.EsbUrlController.Auto
     // [System.Web.Script.Services.ScriptService]
     public class Ctrip_SOA : System.Web.Services.WebService
     {
-
         [WebMethod]
         public string Request(string requestXML)
         {
-            var get = new Get.Ctrip_SOA_ESB();
-            var res = get.Request(requestXML);
+            var res = string.Empty;
+            if (EsbFlag.GetFlag.Equals(GlobalFlag.GetBack))
+            {
+                var get = new Get.Ctrip_SOA_ESB();//.GetHelp();
+                res = get.Request(requestXML);
+            }
 
             if (string.IsNullOrEmpty(res))
-            { 
-                var pull = new Pull.Ctrip_SOA_ESB();
+            {
+                var pull = new Pull.Ctrip_SOA_ESB(); //.PullHelp();
                 res = pull.Request(requestXML);
             }
 

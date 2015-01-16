@@ -4,16 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Xml;
-using EsbGet.EsbUrlController;
-using EsbGet.RabbitHelp;
 using Newtonsoft.Json;
-using MockEntity;
 using System.Threading;
 using Newtonsoft.Json.Linq;
 using EsbRedisHelp;
 using HashHelp;
+using ControllerLib;
 
-namespace EsbGet
+namespace ControllerLib
 {
     public class GetRequestHelp
     {
@@ -32,16 +30,16 @@ namespace EsbGet
 
             var keyTmp = reqXmlToCompare.Message2KeyWord();
 
-            var queryTmp = new
-            {
-                type = requestType,
-                request = reqXmlToCompare,
-                key = keyTmp
-            };
+            //var queryTmp = new
+            //{
+            //    type = requestType,
+            //    request = reqXmlToCompare,
+            //    key = keyTmp
+            //};
 
             var rpcClient = new RPCClient();
 
-            var callMessage = JsonConvert.SerializeObject(queryTmp);
+            var callMessage = keyTmp;
 
             res = rpcClient.Call(callMessage, pipeName);
 

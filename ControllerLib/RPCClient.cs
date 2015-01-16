@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 
-namespace EsbGet.RabbitHelp
+namespace ControllerLib
 {   
     public class MessageClient
     {

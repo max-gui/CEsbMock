@@ -9,10 +9,10 @@ using System.Web.Http;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using DataRabbit;
-using EsbGet.RabbitHelp;
 using EsbRabbitHelp;
 using MockEntity;
 using System.Threading;
+using ControllerLib;
 
 namespace EsbGet.Controllers.Tests
 {
@@ -53,7 +53,7 @@ namespace EsbGet.Controllers.Tests
             var webServiceId = joTmp["WebServiceID"].ToString();
             var wsUrl = joTmp["WSUrl"].ToString();
 
-            Assert.AreEqual("http://10.2.8.70:8059/EsbGet/EsbUrlController/Auto/AutoHelp.asmx", wsUrl);
+            Assert.AreEqual("http://10.2.8.70:8059/EsbGet/EsbUrlController/Auto/Ctrip.SOA.ESB.asmx", wsUrl);
             Assert.AreEqual("410301", webServiceId);
             Assert.AreEqual("Payment.TMPay.Service", wsName);
 

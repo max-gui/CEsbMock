@@ -23,7 +23,9 @@ namespace DataRabbit
         public static CancellationTokenSource cts = new CancellationTokenSource();
         
         public static void Main(string[] args)
-        {            
+        {
+            init();
+
             var token = cts.Token;
 
             var workMethodList = new List<Action<CancellationToken>>()
@@ -75,6 +77,45 @@ namespace DataRabbit
             }
 
             RedisHelp.DB.Multiplexer.Close();
+        }
+
+        private static void init()
+        {
+            //init for ctrip.soa.esb.asmx
+            using (var db = new MockMessageEntity())
+            {
+                var typeStrTmp = "SOA.ESB.GetReferenceID";
+                var esbRti = db.RequestTypeInfos.Where(e => e.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase));
+
+                if (esbRti.Count() == 0)
+                {
+                    var wsIdTmp = "901101";
+                    var esbSti = db.ServiceTypes.Where(e => e.WsUrl.Equals(wsIdTmp, StringComparison.OrdinalIgnoreCase));
+
+                    var sti = esbSti.Count() == 1 ? esbSti.First() : null;
+                    if (null == sti)
+                    {
+                        sti = new ServiceTypeInfo
+                        {
+                            WebServiceId = wsIdTmp,
+                            WSName = "SOA.ESB",
+                            WsUrl = "http://soa.fws.qa.nt.ctripcorp.com//SOA.ESB//Ctrip.SOA.ESB.asmx"
+                        };
+
+                        db.ServiceTypes.Add(sti);
+                    }
+
+                    var rti = new RequestTypeInfo
+                    {
+                        RequestType = typeStrTmp,
+                        ServiceType = sti
+                    };
+
+                    db.RequestTypeInfos.Add(rti);
+
+                    db.SaveChanges();
+                }
+            }
         }
 
         private static void Send(string channelName, Action<string> messageAct,CancellationToken ct)
@@ -292,9 +333,11 @@ namespace DataRabbit
                     using (var db = new MockMessageEntity())
                     {
                         var n =
-                            from info in db.RequestTypeInfos
-                            where info.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase)
-                            select info;
+                            db.RequestTypeInfos.Include(e => e.ServiceType).Where(
+                                r => r.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase));
+                        //from info in db.RequestTypeInfos
+                        //    where info.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase)
+                        //    select info;
 
                         if (n.Count() > 0)
                         {
@@ -424,11 +467,9 @@ namespace DataRabbit
         {
             Rpc(PipeName.EsbGetMockData.ToString(), (message) =>
             {
-                var mockMessageTmp = JObject.Parse(message);
+                //var mockMessageTmp = JObject.Parse(message);
 
-                var requestTypeTmp = mockMessageTmp["type"].ToString();
-                var requestXMLTmp = mockMessageTmp["request"].ToString();
-                var requestKeyTmp = mockMessageTmp["key"].ToString();
+                var requestKeyTmp = message; // mockMessageTmp["key"].ToString();
 
                 var redis = RedisHelp.DB;
                 var res = redis.HashGetAsync(requestKeyTmp, "response").Result.ToString();
@@ -442,7 +483,6 @@ namespace DataRabbit
                         var m =
                             from info in db.MockMessages
                             where
-                                info.RequestType.RequestType.Equals(requestTypeTmp) &&
                                 info.KeyInfo.Equals(requestKeyTmp)
                             select
                                 info;
