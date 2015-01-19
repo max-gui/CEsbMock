@@ -20,6 +20,10 @@ namespace EsbGet.EsbUrlController.Auto
         [WebMethod]
         public string Request(string requestXML)
         {
+            #region
+            //
+            Console.WriteLine("");
+            #endregion
             var res = string.Empty;
             if (EsbFlag.GetFlag.Equals(GlobalFlag.GetBack))
             {
