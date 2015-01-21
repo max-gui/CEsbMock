@@ -81,6 +81,7 @@ namespace DataRabbit
 
         private static void init()
         {
+            Console.WriteLine("waitting to init the db");
             //init for ctrip.soa.esb.asmx
             using (var db = new MockMessageEntity())
             {
@@ -116,6 +117,8 @@ namespace DataRabbit
                     db.SaveChanges();
                 }
             }
+
+            Console.WriteLine("the db init has been ok");
         }
 
         private static void Send(string channelName, Action<string> messageAct,CancellationToken ct)
