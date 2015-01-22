@@ -21,10 +21,10 @@ namespace DataRabbit
     public class Program
     {
         public static CancellationTokenSource cts = new CancellationTokenSource();
-        
+
         public static void Main(string[] args)
         {
-            init();
+            initForDb();
 
             var token = cts.Token;
 
@@ -41,16 +41,16 @@ namespace DataRabbit
                 RequestInfoIn,
                 RequestInfoOut
             };
-            
+
             var workerList = new List<Task>();
             var taskTmp = default(Task);
-            
+
             Action<Action<CancellationToken>> actTmp = (act) =>
                 {
                     taskTmp = Task.Factory.StartNew(() =>
                     {
                         act(token);
-                    },token,TaskCreationOptions.LongRunning,TaskScheduler.Default);
+                    }, token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
                     workerList.Add(taskTmp);
                 };
             foreach (var worker in workMethodList)
@@ -60,53 +60,81 @@ namespace DataRabbit
             }
 
             try
-            {                
+            {
                 Task.WaitAll(workerList.ToArray());
             }
-            catch(AggregateException e)
+            catch (AggregateException e)if(e.InnerExceptions.Any(ex=> ex is TaskCanceledException))
             {
                 foreach (var v in e.InnerExceptions)
                 {
-                    if (v is TaskCanceledException)
-                        Console.WriteLine("   TaskCanceledException: Task {0}",
-                                          ((TaskCanceledException)v).Task.Id);
-                    else
-                        Console.WriteLine("   Exception: {0}", v.GetType().Name);
+                    IfElseHelp(() => v is TaskCanceledException,
+                        () => Console.WriteLine("   TaskCanceledException: Task \{((TaskCanceledException)v).Task.Id}"),//, ((TaskCanceledException)v).Task.Id),
+                        () => Console.WriteLine("   Exception: \{v.GetType().Name}"));//, v.GetType().Name));
                 }
                 Console.WriteLine();
             }
-
-            RedisHelp.DB.Multiplexer.Close();
+            finally
+            {
+                RedisHelp.DB.Multiplexer.Close();
+            }
         }
 
-        private static void init()
+        private static T CodeBlockHelp<T>(Func<T> f) => f();
+        private static bool IfElseHelp(Func<bool> flag, Action trueBlock, Action falseBlock) 
+            =>
+            flag() ?
+                CodeBlockHelp<bool>(() => { trueBlock(); return true; }) :
+                CodeBlockHelp<bool>(() => { falseBlock(); return false; });
+
+        private static bool IfElseHelp(Func<bool> flag, Action trueBlock)
+            =>
+            flag() ?
+                CodeBlockHelp<bool>(() => { trueBlock(); return true; }) :
+                false;
+
+        delegate Func<A, R> Recursive<A, R>(Recursive<A, R> r);
+
+        static Func<A, R> Y<A, R>(Func<Func<A, R>, Func<A, R>> f)
         {
-            Console.WriteLine("waitting to init the db");
+            Recursive<A, R> rec = r => a => f(r(r))(a);
+            return rec(rec);
+        }
+
+
+        private static void initForDb()
+        {
+            Console.WriteLine("waitting for \{nameof(initForDb)}");
             //init for ctrip.soa.esb.asmx
             using (var db = new MockMessageEntity())
             {
                 var typeStrTmp = "SOA.ESB.GetReferenceID";
                 var esbRti = db.RequestTypeInfos.Where(e => e.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase));
 
-                if (esbRti.Count() == 0)
+                var rti = default(RequestTypeInfo);
+                rti = esbRti.FirstOrDefault() ?? CodeBlockHelp<RequestTypeInfo>(() =>
                 {
                     var wsIdTmp = "901101";
-                    var esbSti = db.ServiceTypes.Where(e => e.WsUrl.Equals(wsIdTmp, StringComparison.OrdinalIgnoreCase));
+                    var esbSti = db.ServiceTypes.Where(e => e.WebServiceId.Equals(wsIdTmp, StringComparison.OrdinalIgnoreCase));
 
-                    var sti = esbSti.Count() == 1 ? esbSti.First() : null;
-                    if (null == sti)
+                    var sti = default(ServiceTypeInfo);
+                    sti = esbSti.FirstOrDefault() ?? CodeBlockHelp<ServiceTypeInfo>(() =>
                     {
                         sti = new ServiceTypeInfo
                         {
                             WebServiceId = wsIdTmp,
-                            WSName = "SOA.ESB",
+                            WSName = "SOA.ESB1",
                             WsUrl = "http://soa.fws.qa.nt.ctripcorp.com//SOA.ESB//Ctrip.SOA.ESB.asmx"
                         };
 
                         db.ServiceTypes.Add(sti);
-                    }
 
-                    var rti = new RequestTypeInfo
+                        return sti;
+                    });
+                    //Func<int, int> fib = Y<int, int>(f => n => n > 1 ? f(n - 1) + f(n - 2) : n);
+
+                    //Console.WriteLine(fib(6));
+
+                    rti = new RequestTypeInfo
                     {
                         RequestType = typeStrTmp,
                         ServiceType = sti
@@ -115,10 +143,12 @@ namespace DataRabbit
                     db.RequestTypeInfos.Add(rti);
 
                     db.SaveChanges();
-                }
+
+                    return rti;
+                });
             }
 
-            Console.WriteLine("the db init has been ok");
+            Console.WriteLine("the \{nameof(initForDb)} has been ok");
         }
 
         private static void Send(string channelName, Action<string> messageAct,CancellationToken ct)
@@ -134,7 +164,7 @@ namespace DataRabbit
                     var consumer = new QueueingBasicConsumer(channel);
                     channel.BasicConsume(channelName, true, consumer);
 
-                    Console.WriteLine(string.Format(" [*] {0} Waiting for messages.",channelName));
+                    Console.WriteLine(" [*] \{channelName} Waiting for messages.");
                     while (true)
                     {
                         Thread.SpinWait(1000);
@@ -148,24 +178,25 @@ namespace DataRabbit
                         //    break;// ct.ThrowIfCancellationRequested();
                         //}
                         var ea = default(BasicDeliverEventArgs);
-                        var flag = consumer.Queue.Dequeue(1000, out ea);
+                        //var flag = consumer.Queue.Dequeue(1000, out ea);
 
-                        if (flag)
-                        {
-                            var body = ea.Body;
-                            var message = Encoding.UTF8.GetString(body);
-
-                            try
+                        IfElseHelp(() => consumer.Queue.Dequeue(1000, out ea),
+                            () =>
                             {
-                                messageAct(message);
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(" [.] " + e.Message);
-                            }
+                                var body = ea.Body;
+                                var message = Encoding.UTF8.GetString(body);
 
-                            Console.WriteLine(" [x] Received {0}", message);
-                        }
+                                try
+                                {
+                                    messageAct(message);
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(" [.] \{e.Message}");
+                                }
+
+                                Console.WriteLine(" [x] Received \{message}");
+                            });                        
                     }
                 }
             }
@@ -183,7 +214,7 @@ namespace DataRabbit
                     channel.BasicQos(0, 1, false);
                     var consumer = new QueueingBasicConsumer(channel);
                     channel.BasicConsume(FromChannel, false, consumer);
-                    Console.WriteLine(string.Format(" [x] {0} Awaiting RPC requests",FromChannel));
+                    Console.WriteLine(" [x] \{FromChannel} Awaiting RPC requests");//,FromChannel));
 
 
                     while (true)
@@ -199,111 +230,107 @@ namespace DataRabbit
                         //}
 
                         var ea = default(BasicDeliverEventArgs);
-                        var flag = consumer.Queue.Dequeue(1000,out ea);
+                        //var flag = consumer.Queue.Dequeue(1000,out ea);
 
-                        if (flag)
-                        {
-                            var body = ea.Body;
-                            var props = ea.BasicProperties;
-                            var replyProps = channel.CreateBasicProperties();
-                            replyProps.CorrelationId = props.CorrelationId;
-
-                            string res = string.Empty;
-
-                            try
+                        IfElseHelp(() => consumer.Queue.Dequeue(1000, out ea),
+                            () =>
                             {
-                                var message = Encoding.UTF8.GetString(body);
-                                res = messageAct(message);
+                                var body = ea.Body;
+                                var props = ea.BasicProperties;
+                                var replyProps = channel.CreateBasicProperties();
+                                replyProps.CorrelationId = props.CorrelationId;
 
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(" [.] " + e.Message);
-                            }
-                            finally
-                            {
-                                var responseBytes =
-                                    Encoding.UTF8.GetBytes(res);
-                                channel.BasicPublish("", props.ReplyTo, replyProps,
-                                                     responseBytes);
-                                channel.BasicAck(ea.DeliveryTag, false);
-                            }
-                        }
-                        //});
+                                string res = string.Empty;
+
+                                try
+                                {
+                                    var message = Encoding.UTF8.GetString(body);
+                                    res = messageAct(message);
+
+                                }
+                                catch (Exception e)
+                                {
+                                    Console.WriteLine(" [.] \{e.Message}");// + e.Message);
+                                }
+                                finally
+                                {
+                                    var responseBytes =
+                                        Encoding.UTF8.GetBytes(res);
+                                    channel.BasicPublish("", props.ReplyTo, replyProps,
+                                                         responseBytes);
+                                    channel.BasicAck(ea.DeliveryTag, false);
+                                }
+                            });
                     }
                 }
             }
         }
 
-        private static void UpdateOrAddMockData(CancellationToken ct)
-        {
+        private static void UpdateOrAddMockData(CancellationToken ct)=>        
             Send(PipeName.EsbUpdateOrAddMockData.ToString(), (message) =>
             {
                 var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
 
                 Save(mockMessageTmp, (db, infoTmp, rtiTmp) =>
                 {
-                    if (null == infoTmp)
+                    infoTmp = infoTmp ?? new MockMessage
                     {
-                        infoTmp = new MockMessage
-                        {
-                            InTime = DateTime.Now,
-                            RequestXml = mockMessageTmp.RequestXml,
-                            ResponseXml = mockMessageTmp.ResponseXml,
-                            RequestType = rtiTmp,
-                            LastModifyTime = DateTime.MaxValue,
-                            Comment = string.IsNullOrEmpty(mockMessageTmp.Comment) ? mockMessageTmp.RequestType.ServiceType.WebServiceId : mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
-                            Timeout = mockMessageTmp.Timeout,
-                            KeyInfo = mockMessageTmp.KeyInfo
-                        };
-                    }
+                        InTime = DateTime.Now,
+                        RequestXml = mockMessageTmp.RequestXml,
+                        ResponseXml = mockMessageTmp.ResponseXml,
+                        RequestType = rtiTmp,
+                        LastModifyTime = DateTime.MaxValue,
+                        Comment = string.IsNullOrEmpty(mockMessageTmp.Comment) ? mockMessageTmp.RequestType.ServiceType.WebServiceId : mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
+                        Timeout = mockMessageTmp.Timeout,
+                        KeyInfo = mockMessageTmp.KeyInfo
+                    }; 
 
                     infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
                     infoTmp.LastModifyTime = DateTime.Now;
 
                     db.MockMessages.Add(infoTmp);
-
-
                     db.SaveChanges();
 
                     CacheToRedis(infoTmp);
                 });
             }, ct);
-        }
+        
 
-        private static void RequestInfoIn(CancellationToken ct)
-        {
+        private static void RequestInfoIn(CancellationToken ct)=>
             Send(PipeName.EsbRequestInfoIn.ToString(), (message) =>
             {
                 var typeTmp = JsonConvert.DeserializeObject<RequestTypeInfo>(message);
 
                 using (var db = new MockMessageEntity())
                 {
-                    var b =
+                    var stiFromDb =
                         from info in db.ServiceTypes
                         where info.WebServiceId.Equals(typeTmp.ServiceType.WebServiceId)
                         select info;
 
-                    var stiTmp = b.Count() > 0 ? b.First() : null;
-                    if (null == stiTmp)
-                    {
-                        stiTmp = new ServiceTypeInfo
-                        {
-                            WebServiceId = typeTmp.ServiceType.WebServiceId,
-                            WSName = typeTmp.ServiceType.WSName,
-                            WsUrl = typeTmp.ServiceType.WsUrl
-                        };
+                    var stiTmp = default(ServiceTypeInfo);
+                    stiTmp = stiFromDb.FirstOrDefault() ?? CodeBlockHelp<ServiceTypeInfo>(() =>
+                     {
+                         stiTmp = new ServiceTypeInfo
+                         {
+                             WebServiceId = typeTmp.ServiceType.WebServiceId,
+                             WSName = typeTmp.ServiceType.WSName,
+                             WsUrl = typeTmp.ServiceType.WsUrl
+                         };
 
-                        db.ServiceTypes.Add(stiTmp);
-                    }
+                         db.ServiceTypes.Add(stiTmp);
 
-                    var c =
+                         return stiTmp;
+                     });
+                    
+
+                    var rtiFromDb =
                         from info in db.RequestTypeInfos
                         where info.RequestType.Equals(typeTmp.RequestType)
                         select info;
 
-                    var rtiTmp = c.Count() > 0 ? c.First() : null;
-                    if (null == rtiTmp)
+                    var rtiTmp = default(RequestTypeInfo);
+                    rtiTmp = rtiFromDb.FirstOrDefault() ?? CodeBlockHelp<RequestTypeInfo>(() =>
                     {
                         rtiTmp = new RequestTypeInfo
                         {
@@ -311,7 +338,9 @@ namespace DataRabbit
                         };
 
                         db.RequestTypeInfos.Add(rtiTmp);
-                    }
+
+                        return rtiTmp;
+                    });
 
                     rtiTmp.ServiceType = stiTmp;
 
@@ -320,109 +349,70 @@ namespace DataRabbit
                     RedisHelp.DB.StringSet(typeTmp.RequestType.ToLower(), valueTmp, expiry: new TimeSpan(1, 0, 0));
                 }
             },ct);
-        }
 
-        private static void RequestInfoOut(CancellationToken ct)
-        {
+        private static void RequestInfoOut(CancellationToken ct) =>
             Rpc(PipeName.EsbRequestInfoOut.ToString(), (message) =>
             {
                 var typeStrTmp = message;
                 var res = string.Empty;
 
-                res = RedisHelp.DB.StringGet(typeStrTmp.ToLower()).ToString();
-                res = string.IsNullOrEmpty(res) ? string.Empty : res;
-                if (string.IsNullOrEmpty(res))
-                {
-                    using (var db = new MockMessageEntity())
-                    {
-                        var n =
-                            db.RequestTypeInfos.Include(e => e.ServiceType).Where(
-                                r => r.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase));
-                        //from info in db.RequestTypeInfos
-                        //    where info.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase)
-                        //    select info;
+                res = RedisHelp.DB.StringGet(typeStrTmp.ToLower()).ToString() ?? CodeBlockHelp<string>(() =>
+                 {
+                     using (var db = new MockMessageEntity())
+                     {
+                         var rtiFromDb =
+                             db.RequestTypeInfos.Include(e => e.ServiceType).Where(
+                                 r => r.RequestType.Equals(typeStrTmp, StringComparison.OrdinalIgnoreCase));
 
-                        if (n.Count() > 0)
-                        {
-                            var m = n.First();
-                            res = JsonConvert.SerializeObject(m);
-                        }
-                    }
-                }
+                         IfElseHelp(() => rtiFromDb.Count() > 0,
+                             () => res = JsonConvert.SerializeObject(rtiFromDb.First()));
+                     }
+
+                     return res;
+                 });
 
                 return res;
             }, ct);
-        }
 
-        private static void AddMethod(CancellationToken ct)
-        {
+        private static void AddMethod(CancellationToken ct) =>
             Rpc(PipeName.EsbNewData.ToString(),(message)=>
             {
                 var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
                 var idTmp = string.Empty;
+
                 Save(mockMessageTmp, ((db, infoTmp, rtiTmp) =>
                 {
-                    if (null == infoTmp)
-                    {
-                        infoTmp = new MockMessage
-                        {
-                            InTime = DateTime.Now,
-                            RequestXml = mockMessageTmp.RequestXml,
-                            ResponseXml = mockMessageTmp.ResponseXml,
-                            RequestType = rtiTmp,
-                            LastModifyTime = DateTime.MaxValue,
-                            Comment = string.IsNullOrEmpty(mockMessageTmp.Comment) ? mockMessageTmp.RequestType.ServiceType.WebServiceId : mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
-                            Timeout = mockMessageTmp.Timeout,
-                            KeyInfo = mockMessageTmp.RequestXml.Message2KeyWord()
-                        };
+                    infoTmp = infoTmp ?? CodeBlockHelp<MockMessage>(() =>
+                         {
+                             infoTmp = new MockMessage
+                             {
+                                 InTime = DateTime.Now,
+                                 RequestXml = mockMessageTmp.RequestXml,
+                                 ResponseXml = mockMessageTmp.ResponseXml,
+                                 RequestType = rtiTmp,
+                                 LastModifyTime = DateTime.MaxValue,
+                                 Comment = string.IsNullOrEmpty(mockMessageTmp.Comment) ? mockMessageTmp.RequestType.ServiceType.WebServiceId : mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
+                                 Timeout = mockMessageTmp.Timeout,
+                                 KeyInfo = mockMessageTmp.RequestXml.Message2KeyWord()
+                             };
 
-                        db.MockMessages.Add(infoTmp);
+                             db.MockMessages.Add(infoTmp);
 
 
-                        db.SaveChanges();
+                             db.SaveChanges();
 
-                        CacheToRedis(infoTmp);
+                             CacheToRedis(infoTmp);
 
-                        idTmp = infoTmp.KeyInfo;
-                    }
+                             idTmp = infoTmp.KeyInfo;
+
+                             return infoTmp;
+                         });                    
                 }));
                 
                 return idTmp;
             }, ct);
 
-            //Send(PipeName.EsbNewData.ToString(), (message) =>
-            //{
-            //    var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
-
-            //    Save(mockMessageTmp, ((db, infoTmp, rtiTmp) =>
-            //    {
-            //        if (null == infoTmp)
-            //        {
-            //            infoTmp = new MockMessage
-            //            {
-            //                InTime = DateTime.Now,
-            //                RequestXml = mockMessageTmp.RequestXml,
-            //                ResponseXml = mockMessageTmp.ResponseXml,
-            //                RequestType = rtiTmp,
-            //                LastModifyTime = DateTime.MaxValue,
-            //                Comment = string.IsNullOrEmpty(mockMessageTmp.Comment) ? mockMessageTmp.RequestType.ServiceType.WebServiceId : mockMessageTmp.Comment, //commentFlag ? string.Empty:mockMessageTmp.Comment,
-            //                Timeout = mockMessageTmp.Timeout,
-            //                KeyInfo = mockMessageTmp.KeyInfo
-            //            };
-
-            //            db.MockMessages.Add(infoTmp);
-
-
-            //            db.SaveChanges();
-
-            //            CacheToRedis(infoTmp);
-            //        }
-            //    }));
-            //});
-        }
-
-        private static void EditerMethod(CancellationToken ct)
-        {
+        private static void EditerMethod(CancellationToken ct) =>
             Rpc(PipeName.EsbEditData.ToString(), (message) =>
                 {
                     var mockMessageTmp = JsonConvert.DeserializeObject<MockMessage>(message);
@@ -431,55 +421,70 @@ namespace DataRabbit
                     using (var db = new MockMessageEntity())
                     {
 
-                        var m =
+                        var infoFromDb =
                         from info in db.MockMessages
                         where
                             info.KeyInfo.Equals(mockMessageTmp.KeyInfo)
                         select
                             info;
 
-                        var infoTmp = m.Count() > 0 ? m.First() : null;
+                        var infoTmp = infoFromDb.FirstOrDefault();// infoFromDb.Count() > 0 ? infoFromDb.First() : null;
 
-                        if (null != infoTmp)
-                        {
-                            if (!string.IsNullOrEmpty(mockMessageTmp.ResponseXml))
+                        IfElseHelp(() => null != infoTmp,
+                            () =>
                             {
-                                infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
-                            }
+                                if (!string.IsNullOrEmpty(mockMessageTmp.ResponseXml))
+                                {
+                                    infoTmp.ResponseXml = mockMessageTmp.ResponseXml;
+                                }
 
-                            if (null != mockMessageTmp.Comment)
-                                infoTmp.Comment = mockMessageTmp.Comment;
+                                if (null != mockMessageTmp.Comment)
+                                    infoTmp.Comment = mockMessageTmp.Comment;
 
-                            if (!TimeSpan.MinValue.Equals(mockMessageTmp.Timeout))
-                                infoTmp.Timeout = mockMessageTmp.Timeout;
-                            infoTmp.LastModifyTime = DateTime.Now;
+                                if (!TimeSpan.MinValue.Equals(mockMessageTmp.Timeout))
+                                    infoTmp.Timeout = mockMessageTmp.Timeout;
 
-                            db.SaveChanges();
+                                infoTmp.LastModifyTime = DateTime.Now;
 
-                            CacheToRedis(infoTmp);
+                                db.SaveChanges();
 
-                            idTmp = infoTmp.KeyInfo;
-                        }
+                                CacheToRedis(infoTmp);
+
+                                idTmp = infoTmp.KeyInfo;
+                            });
                     }
 
                     return idTmp;
-                },ct);                              
-        }
+                },ct);                       
 
-        private static void GetMockData(CancellationToken ct)
-        {
+        private static void GetMockData(CancellationToken ct)=>
             Rpc(PipeName.EsbGetMockData.ToString(), (message) =>
             {
-                //var mockMessageTmp = JObject.Parse(message);
-
-                var requestKeyTmp = message; // mockMessageTmp["key"].ToString();
+                var requestKeyTmp = message;
 
                 var redis = RedisHelp.DB;
-                var res = redis.HashGetAsync(requestKeyTmp, "response").Result.ToString();
-                res = string.IsNullOrEmpty(res) ? string.Empty : res;
-                var timeTmp = redis.HashGetAsync(requestKeyTmp, "timeout").Result.ToString();
+                var res = string.Empty;
+                
+                Func<string, string> retFromCache =
+                    inVar =>
+                    {
+                        var timeTmp = redis.HashGetAsync(requestKeyTmp, "timeout")?.Result.ToString() ?? string.Empty;
 
-                if (string.IsNullOrEmpty(res))
+                        var tmp =
+                                    new
+                                    {
+                                        ResponseXml = inVar,
+                                        Timeout = JsonConvert.DeserializeObject<TimeSpan>(timeTmp)
+                                    };
+
+                        inVar = JsonConvert.SerializeObject(tmp);
+
+                        RedisHelp.DB.KeyExpire(requestKeyTmp, new TimeSpan(1, 0, 0));
+
+                        return inVar;
+                    };
+
+                res = redis.HashGetAsync(requestKeyTmp, "response")?.Result.ToString().Func2Extension(retFromCache) ?? CodeBlockHelp<string>(() =>
                 {
                     using (var db = new MockMessageEntity())
                     {
@@ -505,27 +510,14 @@ namespace DataRabbit
                             CacheToRedis(messageTmp);
                         }
                     }
-                }
-                else
-                {
-                    var tmp =
-                                new
-                                {
-                                    ResponseXml = res,
-                                    Timeout = JsonConvert.DeserializeObject<TimeSpan>(timeTmp)
-                                };
 
-                    res = JsonConvert.SerializeObject(tmp);
-
-                    RedisHelp.DB.KeyExpire(requestKeyTmp, new TimeSpan(1, 0, 0));
-                }
+                    return res;
+                });
 
                 return res;
             }, ct);
-        }
 
-        private static void GetByKey(CancellationToken ct)
-        {
+        private static void GetByKey(CancellationToken ct)=>
             Rpc(PipeName.rpc_getByKey.ToString(), (message) =>
             {
                 string res = string.Empty;
@@ -539,129 +531,110 @@ namespace DataRabbit
 
                 using (var db = new MockMessageEntity())
                 {
-                    var m = db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType).
+                    var messageFromDb = db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType).
                         Where(e => e.KeyInfo.Equals(requestKeyTmp));
 
-                    if (m.Count() > 0)
-                    {
-                        res = JsonConvert.SerializeObject(m.First());
-                    }
+                    res = messageFromDb.FirstOrDefault()?.ToJson() ?? string.Empty;
                 }
 
                 return res;
             }, ct);
-        }
 
-        private static void GetByCommentMethod(CancellationToken ct)
-        {
+        private static void GetByCommentMethod(CancellationToken ct)=>
             Rpc(PipeName.rpc_getByComment.ToString(), (commentTmp) =>
             {
                 string res = string.Empty;
-
-                var resTmp = default(List<MockMessage>);
+                
                 using (var db = new MockMessageEntity())
                 {
-                    var m = db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType).
+                    var messageFromDb = db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType).
                         Where(e => e.Comment.Equals(commentTmp));
 
-                    if (m.Count() > 0)
-                    {
-                        resTmp = m.ToList();
-                        res = JsonConvert.SerializeObject(resTmp);
-                    }
+                    res = messageFromDb.Count() > 0 ? messageFromDb.ToList().ToJson() : string.Empty;                    
                 }
 
                 return res;
             }, ct);
-        }
-        private static void GetAllMethod(CancellationToken ct)
-        {
+
+        private static void GetAllMethod(CancellationToken ct)=>
             Rpc(PipeName.rpc_get_all.ToString(), (commentTmp) =>
             {
                 string res = string.Empty;
 
-                var resTmp = default(List<MockMessage>);
                 using (var db = new MockMessageEntity())
                 {
-                    var m =
+                    var messageFromDb =
                         db.MockMessages.Include(e => e.RequestType).Include(e => e.RequestType.ServiceType);
 
-                    if (m.Count() > 0)
-                    {
-                        resTmp = m.ToList();
-                        res = JsonConvert.SerializeObject(resTmp);
-                    }
+                    res = messageFromDb.Count() > 0 ? messageFromDb.ToList().ToJson() : string.Empty;
                 }
 
                 return res;
             }, ct);
-        }
 
-        private static void DeleteMethod(CancellationToken ct)
-        {
+        private static void DeleteMethod(CancellationToken ct) =>
             Rpc(PipeName.rpc_delete.ToString(), (message) =>
             {
-                //var mockMessageTmp = JObject.Parse(message);
-
-                //var requestTypeTmp = mockMessageTmp["type"].ToString();
-                //var requestXMLTmp = mockMessageTmp["request"].ToString();
-                //var requestKeyTmp = mockMessageTmp["key"].ToString();
                 var requestKeyTmp = message;
 
                 var flag = false;
                 using (var db = new MockMessageEntity())
                 {
-                    var m =
+                    var messageFromDb =
                         from info in db.MockMessages
                         where
                             info.KeyInfo.Equals(requestKeyTmp)
                         select
                             info;
 
-                    if (m.Count() > 0)
-                    {
-                        db.MockMessages.Remove(m.FirstOrDefault());
-                        db.SaveChanges();
+                    var messageToDel = messageFromDb.FirstOrDefault();
 
-                        RedisHelp.DB.KeyDelete(requestKeyTmp);
-                        flag = true;
-                    }
+                    IfElseHelp(() => null != messageToDel,
+                        () =>
+                        {
+                            db.MockMessages.Remove(messageToDel);
+                            db.SaveChanges();
+
+                            RedisHelp.DB.KeyDelete(requestKeyTmp);
+                            flag = true;
+                        });                    
                 }
 
                 var res = JsonConvert.SerializeObject(flag);
                 return res;
             }, ct);
-        }
 
         private static void Save(MockMessage mockMessageTmp, Action<MockMessageEntity, MockMessage, RequestTypeInfo> act)
         {
             using (var db = new MockMessageEntity())
             {
-                var b =
+                var stiFromDb =
                     from info in db.ServiceTypes
                     where info.WebServiceId.Equals(mockMessageTmp.RequestType.ServiceType.WebServiceId)
                     select info;
 
-                var stiTmp = b.Count() > 0 ? b.First() : null;
-                if (null == stiTmp)
-                {
-                    stiTmp = new ServiceTypeInfo
-                    {
-                        WebServiceId = mockMessageTmp.RequestType.ServiceType.WebServiceId,
-                        WSName = mockMessageTmp.RequestType.ServiceType.WSName,
-                        WsUrl = mockMessageTmp.RequestType.ServiceType.WsUrl
-                    };
+                var stiTmp = default(ServiceTypeInfo);// stiFromDb.Count() > 0 ? stiFromDb.First() : null;
+                stiTmp = stiFromDb.FirstOrDefault() ?? CodeBlockHelp<ServiceTypeInfo>(() =>
+                 {
+                     stiTmp = new ServiceTypeInfo
+                     {
+                         WebServiceId = mockMessageTmp.RequestType.ServiceType.WebServiceId,
+                         WSName = mockMessageTmp.RequestType.ServiceType.WSName,
+                         WsUrl = mockMessageTmp.RequestType.ServiceType.WsUrl
+                     };
 
-                    db.ServiceTypes.Add(stiTmp);
-                }
+                     db.ServiceTypes.Add(stiTmp);
 
-                var c =
+                     return stiTmp;
+                 });
+
+                var rtiFromDb =
                     from info in db.RequestTypeInfos
                     where info.RequestType.Equals(mockMessageTmp.RequestType.RequestType)
                     select info;
 
-                var rtiTmp = c.Count() > 0 ? c.First() : null;
-                if (null == rtiTmp)
+                var rtiTmp = default(RequestTypeInfo);// rtiFromDb.Count() > 0 ? rtiFromDb.First() : null;
+                rtiTmp = rtiFromDb.FirstOrDefault() ?? CodeBlockHelp<RequestTypeInfo>(() =>
                 {
                     rtiTmp = new RequestTypeInfo
                     {
@@ -669,18 +642,19 @@ namespace DataRabbit
                     };
 
                     db.RequestTypeInfos.Add(rtiTmp);
-                }
+                    return rtiTmp;
+                });
 
                 rtiTmp.ServiceType = stiTmp;
 
-                var m =
+                var messageFromDb =
                 from info in db.MockMessages
                 where
                     info.KeyInfo.Equals(mockMessageTmp.KeyInfo)
                 select
                     info;
 
-                var infoTmp = m.Count() > 0 ? m.First() : null;
+                var infoTmp = messageFromDb.FirstOrDefault();// m.Count() > 0 ? m.First() : null;
 
                 act(db, infoTmp, rtiTmp);
 
@@ -696,5 +670,17 @@ namespace DataRabbit
                 new HashEntry("timeout",JsonConvert.SerializeObject(mockMessageTmp.Timeout))});
             RedisHelp.DB.KeyExpireAsync(mockMessageTmp.KeyInfo, expiry: new TimeSpan(1, 0, 0));
         }
+    }
+
+    public static class JsonHelp
+    {
+        public static string ToJson<T>(this T inVar) =>
+            JsonConvert.SerializeObject(inVar);
+    }
+
+    public static class FuncHelp
+    {
+        public static Tout Func2Extension<Tin,Tout>(this Tin inVar,Func<Tin,Tout> f) =>
+            f(inVar);
     }
 }
