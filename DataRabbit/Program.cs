@@ -68,8 +68,8 @@ namespace DataRabbit
                 foreach (var v in e.InnerExceptions)
                 {
                     IfElseHelp(() => v is TaskCanceledException,
-                        () => Console.WriteLine("   TaskCanceledException: Task \{((TaskCanceledException)v).Task.Id}"),//, ((TaskCanceledException)v).Task.Id),
-                        () => Console.WriteLine("   Exception: \{v.GetType().Name}"));//, v.GetType().Name));
+                        () => Console.WriteLine($"   TaskCanceledException: Task {((TaskCanceledException)v).Task.Id}"),//, ((TaskCanceledException)v).Task.Id),
+                        () => Console.WriteLine($"   Exception: {v.GetType().Name}"));//, v.GetType().Name));
                 }
                 Console.WriteLine();
             }
@@ -103,7 +103,7 @@ namespace DataRabbit
 
         private static void initForDb()
         {
-            Console.WriteLine("waitting for \{nameof(initForDb)}");
+            Console.WriteLine($"waitting for {nameof(initForDb)}");
             //init for ctrip.soa.esb.asmx
             using (var db = new MockMessageEntity())
             {
@@ -148,7 +148,7 @@ namespace DataRabbit
                 });
             }
 
-            Console.WriteLine("the \{nameof(initForDb)} has been ok");
+            Console.WriteLine($"the {nameof(initForDb)} has been ok");
         }
 
         private static void Send(string channelName, Action<string> messageAct,CancellationToken ct)
@@ -164,7 +164,7 @@ namespace DataRabbit
                     var consumer = new QueueingBasicConsumer(channel);
                     channel.BasicConsume(channelName, true, consumer);
 
-                    Console.WriteLine(" [*] \{channelName} Waiting for messages.");
+                    Console.WriteLine($" [*] {channelName} Waiting for messages.");
                     while (true)
                     {
                         Thread.SpinWait(1000);
@@ -192,10 +192,10 @@ namespace DataRabbit
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine(" [.] \{e.Message}");
+                                    Console.WriteLine($" [.] {e.Message}");
                                 }
 
-                                Console.WriteLine(" [x] Received \{message}");
+                                Console.WriteLine($" [x] Received {message}");
                             });                        
                     }
                 }
@@ -214,7 +214,7 @@ namespace DataRabbit
                     channel.BasicQos(0, 1, false);
                     var consumer = new QueueingBasicConsumer(channel);
                     channel.BasicConsume(FromChannel, false, consumer);
-                    Console.WriteLine(" [x] \{FromChannel} Awaiting RPC requests");//,FromChannel));
+                    Console.WriteLine($" [x] {FromChannel} Awaiting RPC requests");//,FromChannel));
 
 
                     while (true)
@@ -250,7 +250,7 @@ namespace DataRabbit
                                 }
                                 catch (Exception e)
                                 {
-                                    Console.WriteLine(" [.] \{e.Message}");// + e.Message);
+                                    Console.WriteLine($" [.] {e.Message}");// + e.Message);
                                 }
                                 finally
                                 {
